@@ -33,6 +33,8 @@ namespace NPC {
             }
         }
 
+        public Vector3 MinLimits;
+
         public bool CloseUp {
             get {
                 return gCloseUp;
@@ -200,16 +202,19 @@ namespace NPC {
             if (Input.GetKey(KeyCode.W)) {
                 transform.position += Vector3.right * (Time.deltaTime * speedModifier);
             } else if (Input.GetKey(KeyCode.S)) {
-                transform.position -= Vector3.right * (Time.deltaTime * speedModifier);
+                if (transform.position.x > MinLimits.x)
+                    transform.position -= Vector3.right * (Time.deltaTime * speedModifier);
             }
             if (Input.GetKey(KeyCode.A)) {
                 transform.position += Vector3.forward * (Time.deltaTime * speedModifier);
             } else if (Input.GetKey(KeyCode.D)) {
-                transform.position -= Vector3.forward * (Time.deltaTime * speedModifier);
+                if(transform.position.z > MinLimits.z)
+                    transform.position -= Vector3.forward * (Time.deltaTime * speedModifier);
             }
 
             if(Input.GetAxis("Mouse ScrollWheel") > 0.0f) {
-                transform.position = Vector3.Lerp(transform.position, transform.position - Vector3.up, Time.deltaTime * ZoomSpeed * speedModifier);
+                if (transform.position.y > MinLimits.y)
+                    transform.position = Vector3.Lerp(transform.position, transform.position - Vector3.up, Time.deltaTime * ZoomSpeed * speedModifier);
             } else if (Input.GetAxis("Mouse ScrollWheel") < 0.0f) {
                 transform.position = Vector3.Lerp(transform.position, transform.position + Vector3.up, Time.deltaTime * ZoomSpeed * speedModifier);
             }
