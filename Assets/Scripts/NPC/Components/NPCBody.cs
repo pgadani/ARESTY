@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 
 namespace NPC {
-
+    
     #region Enums
     public enum LOCO_STATE {
         IDLE,
@@ -21,6 +21,29 @@ namespace NPC {
         FALL
     }
 
+    public enum GESTURE_CODE {
+        [NPCAnimation("Gest_Acknowledge", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ACKNOWLEDGE,
+        [NPCAnimation("Gest_Angry", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ANGRY,
+        [NPCAnimation("Gest_Why", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        WHY,
+        [NPCAnimation("Gest_Short_Wave", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        WAVE_HELLO,
+        [NPCAnimation("Gest_Negate", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        NEGATE,
+        [NPCAnimation("Body_Die", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        DIE,
+        [NPCAnimation("Gest_Anger", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ANGER,
+        [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        DISSAPOINTMENT,
+        [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        HURRAY,
+        [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        GRAB_FRONT
+    }
+
     public enum NAV_STATE {
         DISABLED = 0,
         STEERING_NAV,
@@ -30,8 +53,7 @@ namespace NPC {
 
     [System.Serializable]
     public class NPCBody : MonoBehaviour {
-
-
+        
         #region Members
         [SerializeField]
         NavMeshAgent gNavMeshAgent;
@@ -90,6 +112,8 @@ namespace NPC {
         private float TurnRightAngle { get; set; }
 
         private NPCController g_NPCController;
+
+        private string g_GesturesLayer = "Gestures";
         #endregion
 
         #region Properties
@@ -216,7 +240,7 @@ namespace NPC {
             if (gIKController == null) IKEnabled = false;
             g_NavQueue = new List<Vector3>();
             if(g_NPCController.TestTargetLocation != null) {
-                GoTo(g_NPCController.TestTargetLocation.position);
+                GoTo( new List<Vector3>() { g_NPCController.TestTargetLocation.position } );
             }
         }
 
@@ -317,16 +341,46 @@ namespace NPC {
             }
         }
 
-        public void GoTo(Vector3 location) {
+        #region Affordances
+
+        [NPCAffordance("WalkTowards")]
+        public void WalkTowards(Vector3 location) {
             SetIdle();
             g_NavQueue.Clear();
             g_NavQueue.Add(location);
         }
 
+        /// <summary>
+        /// The queue will we checked and followed every UpdateNavigation call
+        /// </summary>
+        /// <param name="List of locations to follow"></param>
+        [NPCAffordance("GoTo")]
         public void GoTo(List<Vector3> location) {
             SetIdle();
             g_NavQueue.Clear();
             g_NavQueue = location;
+            
+        }
+
+        [NPCAffordance("OrientTowards")]        
+        public void OrientTowards() {
+
+        }
+
+        [NPCAffordance("StartLookAt")]
+        public void StartLookAt(Transform t) {
+            gIKController.LOOK_AT_TARGET = t;
+        }
+
+        [NPCAffordance("StopLookAt")]
+        public void StopLookAt() {
+            gIKController.LOOK_AT_TARGET = null;
+        }
+
+        [NPCAffordance("DoGesture")]
+        public void DoGesture(string t) {
+            // resolve NPCAnimation attribute
+            // exeucte accordingly
         }
 
         /// <summary>
@@ -342,19 +396,19 @@ namespace NPC {
                 go.transform.position = pos(transform.position);
                 go.transform.rotation = transform.rotation;
                 go.transform.SetParent(transform);
-                LookAt(go.transform);
+                StartLookAt(go.transform);
                 g_LookingAround = true;
             } else if (g_LookingAround) {
                 go = gIKController.LOOK_AT_TARGET.gameObject;
-                LookAt(null);
+                StopLookAt();
                 DestroyImmediate(go);
                 g_LookingAround = false;
             }
         }
 
-        public void LookAt(Transform t) {
-            gIKController.LOOK_AT_TARGET = t;
-        }
+
+        #endregion
+
         #endregion
 
         #region Private_Functions

@@ -8,7 +8,7 @@ namespace NPC {
     [System.Serializable]
     public class NPCIKController : MonoBehaviour {
 
-        //   Animator gAnimator;
+        /* Animator gAnimator */
         Animator gAnimator;
         NPCBody g_NPCBody;
 
@@ -24,6 +24,7 @@ namespace NPC {
 
         /* Weights*/
         public float IK_WEIGHT;
+        public float MAX_LOOK_WEIGHT = 1f;
 
         private float g_CurrentLookWeight = 0.0f;
         private float g_LookSmoothness = 50.0f;
@@ -45,6 +46,7 @@ namespace NPC {
         Transform RIGHT_FOOT;
         Transform LEFT_FOOT;
 
+        #region Unity_Functions
 
         public void Reset() {
             gAnimator = gameObject.GetComponent<Animator>();
@@ -67,30 +69,41 @@ namespace NPC {
             }
 
             // Find Bones
-            RIGHT_HAND = gAnimator.GetBoneTransform(HumanBodyBones.RightHand);
-            LEFT_HAND = gAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
-            RIGHT_FOOT = gAnimator.GetBoneTransform(HumanBodyBones.RightFoot);
-            LEFT_FOOT = gAnimator.GetBoneTransform(HumanBodyBones.LeftFoot);
-            HEAD = gAnimator.GetBoneTransform(HumanBodyBones.Head);
+            RIGHT_HAND  = gAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+            LEFT_HAND   = gAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
+            RIGHT_FOOT  = gAnimator.GetBoneTransform(HumanBodyBones.RightFoot);
+            LEFT_FOOT   = gAnimator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            HEAD        = gAnimator.GetBoneTransform(HumanBodyBones.Head);
 
             // default weight
-            IK_WEIGHT = IK_WEIGHT < 0.1f ? 1f : IK_WEIGHT;
+            IK_WEIGHT   = IK_WEIGHT < 0.1f ? 1f : IK_WEIGHT;
         }
 
         // Unity's main IK method called every frame
         void OnAnimatorIK() {
             if(g_NPCBody.IKEnabled) {
+                
                 /* Feet */
                 // DoFeetIK();
+                
+                /* Look At */
+                DoLookAt();
+                
+            }
+        }
 
-                /* Do look IK */
-                if (LOOK_AT_TARGET != null) {
-                    gAnimator.SetLookAtPosition(LOOK_AT_TARGET.position);
-                    g_CurrentLookWeight = Mathf.Lerp(0.0f, 1.0f, Time.deltaTime * g_LookSmoothness);
-                    gAnimator.SetLookAtWeight(g_CurrentLookWeight);
-                } else {
-                    g_CurrentLookWeight = Mathf.Lerp(1.0f, 0.0f, Time.deltaTime * g_LookSmoothness);
-                }
+        #endregion
+
+        #region Private_Functions
+
+        private void DoLookAt() {
+            /* Do look IK */
+            if (LOOK_AT_TARGET != null) {
+                gAnimator.SetLookAtPosition(LOOK_AT_TARGET.position);
+                g_CurrentLookWeight = Mathf.Max(Mathf.Lerp(0.0f, 1.0f, Time.deltaTime * g_LookSmoothness), MAX_LOOK_WEIGHT);
+                gAnimator.SetLookAtWeight(g_CurrentLookWeight);
+            } else {
+                g_CurrentLookWeight = Mathf.Lerp(1.0f, 0.0f, Time.deltaTime * g_LookSmoothness);
             }
         }
 
@@ -116,6 +129,8 @@ namespace NPC {
             gAnimator.SetIKRotation(AvatarIKGoal.LeftFoot, IK_TARGET_LEFT_FOOT.rotation);
             gAnimator.SetIKRotation(AvatarIKGoal.RightFoot, IK_TARGET_RIGHT_FOOT.rotation);
         }
+
+        #endregion
 
         Transform LOOK_AT {
             get {
