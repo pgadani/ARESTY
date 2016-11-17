@@ -9,7 +9,7 @@ namespace NPC {
         FLOAT,
         TRIGGER
     }
-
+    
     public enum ANIMATION_LAYER {
         FULL_BODY,
         GESTURE
@@ -18,8 +18,9 @@ namespace NPC {
     [AttributeUsage(AttributeTargets.All)]
     public class NPCAnimation : System.Attribute {
         public string Name;
-        ANIMATION_PARAM_TYPE ParamType;
-        ANIMATION_LAYER Layer;
+        public int AnimationHash;
+        public ANIMATION_PARAM_TYPE ParamType;
+        public ANIMATION_LAYER Layer;
         public NPCAnimation(string name, ANIMATION_PARAM_TYPE paramType, ANIMATION_LAYER layer) {
             this.Name = name;
             this.ParamType = paramType;

@@ -135,6 +135,17 @@ namespace NPC {
             return g_NPCModules != null && g_NPCModules.ContainsKey(mod.NPCModuleName());
         }
 
+        public void RunTo(Vector3 t) {
+            List<Vector3> path = gAI.FindPath(t);
+            if (path.Count < 1) {
+                Debug("NPCController --> No path found to target location");
+            } else {
+                if (path.Count == 1)
+                    Debug("NPCController --> No pathfinder enabled, defaulting to steering");
+                gBody.RunTo(path);
+            }
+        }
+        
         public void GoTo(Vector3 t) {
             List<Vector3> path = gAI.FindPath(t);
             if (path.Count < 1) {
@@ -146,6 +157,10 @@ namespace NPC {
             }
         }
 
+        public void OrientTowards(Vector3 t) {
+            gBody.OrientTowards(t);
+        }
+        
         public bool AddNPCModule(INPCModule mod) {
             if (g_NPCModules == null) g_NPCModules = new Dictionary<string, INPCModule>();
             if (g_NPCModules.ContainsKey(mod.NPCModuleName())) return false;

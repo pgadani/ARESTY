@@ -32,6 +32,7 @@ namespace NPC {
         /* Enable disabled IK and COmponents during runtime */
         public bool IK_ACTIVE;
         public bool USE_HINTS;
+        public float REACH_DISTANCE = 0.5f;
 
         public Transform Head {
             get {
@@ -132,6 +133,17 @@ namespace NPC {
 
         #endregion
 
+        #region Public_Functions
+        public bool CanBeReached(IPerceivable per) {
+            return Vector3.Distance(per.GetTransform().position, RIGHT_HAND.position)
+                <= REACH_DISTANCE;
+        } 
+
+        public bool ReachFor(IPerceivable per) {
+            return false;
+        }
+        #endregion
+        
         Transform LOOK_AT {
             get {
                 return this.LOOK_AT_TARGET;
