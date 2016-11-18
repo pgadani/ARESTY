@@ -246,6 +246,7 @@ namespace NPC {
             if(gIKController == null) {
                 gIKController = gameObject.AddComponent<NPCIKController>();
             }
+            g_NPCController.EntityType = PERCEIVEABLE_TYPE.NPC;
         }
 
         void Start() {

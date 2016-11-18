@@ -204,7 +204,9 @@ namespace NPC {
                 gMainAgent = false;
                 if (GetComponent<NPCBody>() != null) DestroyImmediate(GetComponent<NPCBody>());
                 if (GetComponent<NPCPerception>() != null) DestroyImmediate(GetComponent<NPCPerception>());
-                InitializeNPCComponents();
+                if (GetComponent<Animator>() == null) {
+                    InitializeNPCObjectComponents();
+                } else InitializeNPCComponents();
                 gInitialized = true;
             } else {
                 Debug("Loading existing NPCController settings");
@@ -215,6 +217,10 @@ namespace NPC {
 
         #region Private_Functions
         
+        private void InitializeNPCObjectComponents() {
+            EntityType = PERCEIVEABLE_TYPE.OBJECT;
+        }
+
         private void InitializeNPCComponents() {
             gAI = gameObject.AddComponent<NPCAI>();
             gPerception = gameObject.AddComponent<NPCPerception>();
