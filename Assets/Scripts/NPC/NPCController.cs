@@ -204,9 +204,7 @@ namespace NPC {
                 gMainAgent = false;
                 if (GetComponent<NPCBody>() != null) DestroyImmediate(GetComponent<NPCBody>());
                 if (GetComponent<NPCPerception>() != null) DestroyImmediate(GetComponent<NPCPerception>());
-                if (GetComponent<Animator>() == null) {
-                    InitializeNPCObjectComponents();
-                } else InitializeNPCComponents();
+                InitializeNPCComponents();
                 gInitialized = true;
             } else {
                 Debug("Loading existing NPCController settings");
@@ -216,10 +214,6 @@ namespace NPC {
         #endregion
 
         #region Private_Functions
-        
-        private void InitializeNPCObjectComponents() {
-            EntityType = PERCEIVEABLE_TYPE.OBJECT;
-        }
 
         private void InitializeNPCComponents() {
             gAI = gameObject.AddComponent<NPCAI>();
@@ -255,35 +249,20 @@ namespace NPC {
         #endregion
 
         #region IPerceivable
-        PERCEIVE_WEIGHT IPerceivable.GetPerceptionWeightType() {
+
+        public virtual PERCEIVE_WEIGHT GetPerceptionWeightType() {
             return PERCEIVE_WEIGHT.WEIGHTED;
         }
 
-        public Transform GetTransform() {
+        public virtual Transform GetTransform() {
             return this.transform;
-        }
-
-        public Vector3 CalculateAgentRepulsionForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateAgentSlidingForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateRepulsionForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateSlidingForce(IPerceivable p) {
-            return Vector3.zero;
         }
 
         public Vector3 GetCurrentVelocity() {
             return gBody.Velocity;
         }
 
-        public Vector3 GetPosition() {
+        public virtual Vector3 GetPosition() {
             return transform.position;
         }
 
@@ -295,8 +274,12 @@ namespace NPC {
             return gBody.AgentRadius;
         }
 
-        public PERCEIVEABLE_TYPE GetNPCEntityType() {
-            return EntityType;
+        public virtual PERCEIVEABLE_TYPE GetNPCEntityType() {
+            return PERCEIVEABLE_TYPE.NPC;
+        }
+
+        public virtual Vector3 GetMainLookAtPoint() {
+            return gBody.Head.position;
         }
 
         #endregion

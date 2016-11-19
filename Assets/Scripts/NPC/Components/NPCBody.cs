@@ -53,6 +53,7 @@ namespace NPC {
         STEERING_NAV,
         NAVMESH_NAV
     }
+
     #endregion
 
     [System.Serializable]
@@ -198,8 +199,9 @@ namespace NPC {
             return g_Animator.GetCurrentAnimatorStateInfo(0).shortNameHash == m_Gestures[gest].AnimationHash;
         }
 
-        public bool IsAtTargetLocation() {
-            return g_TargetLocationReached;
+        public bool IsAtTargetLocation(Vector3 targetLoc) {
+            return g_TargetLocationReached 
+                && targetLoc == g_TargetLocation;
         }
 
         public bool IsIdle {
@@ -221,6 +223,7 @@ namespace NPC {
             gRigidBody = gameObject.GetComponent<Rigidbody>();
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
+            gIKController.hideFlags = HideFlags.HideInInspector;
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             if (gNavMeshAgent == null) {
                 gNavMeshAgent = gameObject.AddComponent<NavMeshAgent>();
