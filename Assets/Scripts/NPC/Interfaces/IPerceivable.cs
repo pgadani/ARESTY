@@ -17,15 +17,12 @@ namespace NPC {
     public interface IPerceivable {
         PERCEIVEABLE_TYPE GetNPCEntityType();
         PERCEIVE_WEIGHT GetPerceptionWeightType();
-        Transform GetTransform();
-        Vector3 CalculateAgentRepulsionForce(IPerceivable p);
-        Vector3 CalculateAgentSlidingForce(IPerceivable p);
-        Vector3 CalculateRepulsionForce(IPerceivable p);
-        Vector3 CalculateSlidingForce(IPerceivable p);
-        Vector3 GetCurrentVelocity();
-        Vector3 GetPosition();
-        Vector3 GetForwardDirection();
-        float GetAgentRadius();
+        Transform   GetTransform();
+        Vector3     GetCurrentVelocity();
+        Vector3     GetPosition();
+        Vector3     GetForwardDirection();
+        float       GetAgentRadius();
+        Vector3     GetMainLookAtPoint();
     }
 
 }
