@@ -26,8 +26,7 @@ using System;
 public class NPCBehavior : MonoBehaviour, INPCModule {
 
     #region Members
-
-    private BehaviorAgent g_BehaviorAgent;
+    
     private NPCController g_NPCController;
     public bool Enabled = true;
     
@@ -35,19 +34,15 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
 
     #region Unity_Methods
 
-    void Reset() {
+    void Awake() {
         g_NPCController = GetComponent<NPCController>();
-    }
-
-    void Start() {
-
     }
 
     #endregion
 
     #region Public_Functions
     
-    public Node NPC_GoTo(Val<Vector3> location) {
+    public Node NPCBehavior_GoTo(Val<Vector3> location) {
         return new LeafInvoke(
             () => Behavior_GoTo(location.Value)
         );

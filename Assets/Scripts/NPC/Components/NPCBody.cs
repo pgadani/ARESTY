@@ -102,7 +102,6 @@ namespace NPC {
         private float g_CurrentVelocity         = 0.05f;
         private float g_TurningVelocity         = 0.05f;
         private float g_CurrentOrientation      = 0.0f;
-        private bool g_Navigating               = false;
         private bool g_TargetLocationReached= false;
         private static int gHashJump = Animator.StringToHash("JumpLoco");
         private static int gHashIdle = Animator.StringToHash("Idle");
@@ -223,6 +222,7 @@ namespace NPC {
             gRigidBody = gameObject.GetComponent<Rigidbody>();
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
+            if(gIKController == null) gIKController = gameObject.AddComponent<NPCIKController>();
             gIKController.hideFlags = HideFlags.HideInInspector;
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             if (gNavMeshAgent == null) {
@@ -386,7 +386,6 @@ namespace NPC {
         /// <param name="location"></param>
         [NPCAffordance("WalkTowards")]
         public void WalkTowards(Vector3 location) {
-            SetIdle();
             g_NavQueue.Clear();
             g_NavQueue.Add(location);
         }
@@ -404,7 +403,7 @@ namespace NPC {
         [NPCAffordance("GoTo")]
         public void GoTo(List<Vector3> location) {
             g_RunForce = false;
-            SetIdle();
+            Navigating = true;
             g_NavQueue.Clear();
             g_NavQueue = location;
         }
@@ -451,9 +450,10 @@ namespace NPC {
         [NPCAffordance("StopNavigation")]
         public void StopNavigation() {
             g_RunForce = false;
+            SetIdle();
             g_TargetOrientation = transform.position + transform.forward;
             g_NavQueue.Clear();
-            g_Navigating = false;
+            Navigating = false;
         }
 
         /// <summary>
@@ -492,14 +492,14 @@ namespace NPC {
                     if (g_NavQueue.Count > 0) {
                         g_TargetLocationReached = false;
                         HandleSteering();
-                    } g_Navigating = false;
+                    }
                 } else {
                     g_TargetLocation = g_NavQueue[0];
                     g_NavQueue.Clear();
                     HandleNavAgent();
                 }
             } else {
-                g_Navigating = false;
+                Navigating = false;
             }
         }
 
@@ -522,8 +522,7 @@ namespace NPC {
             }
             float angle = Vector3.Angle(targetDirection, transform.forward);
             LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
-            g_Navigating = distance > NavDistanceThreshold;
-            if (g_Navigating) {
+            if (distance > NavDistanceThreshold) {
                 if (angle > 45.0f
                     && g_CurrentStateFwd != LOCO_STATE.FORWARD) {
                     Move(d);
@@ -536,7 +535,7 @@ namespace NPC {
             } else {
                 g_TargetOrientation = transform.position + transform.forward;
                 g_NavQueue.RemoveAt(0);
-                g_TargetLocationReached = true;
+                Navigating = g_TargetLocationReached = g_NavQueue.Count > 0;
             }
         }
 
@@ -600,7 +599,7 @@ namespace NPC {
         }
 
         private void UpdateOrientation() {
-            if(g_CurrentStateFwd != LOCO_STATE.FORWARD && !g_Navigating) {
+            if(g_CurrentStateFwd != LOCO_STATE.FORWARD && !Navigating) {
                 Vector3 targetDirection = g_TargetOrientation - transform.position;
                 float angle = Vector3.Angle(targetDirection, transform.forward);
                 LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
