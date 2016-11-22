@@ -48,6 +48,8 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         );
     }
 
+
+    
     #endregion
 
     #region Private_Functions
