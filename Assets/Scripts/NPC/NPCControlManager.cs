@@ -2,22 +2,7 @@
 using System.Collections;
 
 namespace NPC {
-    /// <summary>
-    /// 
-    /// The NPCControlManager is the main set of [IO, UI and Camera] controllers for the scene's NPCs.
-    /// 
-    /// To set up the controller:
-    /// 1) Before anything:
-    ///     Ensure there exist a Camera with tag "MainCamera" (default)
-    /// 2) Create an empty GameObject in the scene - for example "NPC Controllers"
-    /// 3) Add the NPCControlManager to the "NPC Controllers" object.
-    ///     - The camera will be set as a child of the "NPC Controllers" game object.
-    /// 4) If you want to enable the UI, add a Canvas as a child of the "NPC Controllers"
-    ///    and add it to the NPCControlManager Canvas public member from the inspector.
-    ///    You can also create a secondary Canvas as the context menu one. Set its camera to be
-    ///    the main one.
-    /// 
-    /// </summary>
+
     public class NPCControlManager : MonoBehaviour {
 
         #region Enums
@@ -32,8 +17,6 @@ namespace NPC {
 
         #region Members
         NPCController NPCController = null;
-        public Canvas MainCanvas;
-        public Canvas ContextCanvas;
         private static string mNPCIO = "NPC IO";
         private static string mNPCUI = "NPC UI";
         #endregion Members
@@ -43,11 +26,15 @@ namespace NPC {
         public bool EnableCameraController = false;
         public bool EnableUIController = false;
         #endregion
-        
+
+
         NPCCamController g_NPCCamera;
         NPCUIController g_UI;
         NPCIO g_IO;
+
         
+
+
         public void SetTarget(NPCController c) {
             NPCController = c;
         }

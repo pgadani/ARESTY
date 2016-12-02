@@ -142,13 +142,25 @@ namespace NPC {
         }
 
         public void UpdatePerception() {
-            g_Perceiving = (g_PerceivedObjects.Count > 0);
-            if(g_Controller.DebugMode) {
-                foreach(IPerceivable p in g_PerceivedObjects) {
-                    Debug.DrawLine(g_Head.position, p.GetTransform().position);
+            if (g_PerceivedObjects != null)
+            {
+                g_Perceiving = (g_PerceivedObjects.Count > 0);
+                if (g_Controller.DebugMode)
+                {
+                    foreach (IPerceivable p in g_PerceivedObjects)
+                    {
+                        Debug.DrawLine(g_Head.position, p.GetTransform().position);
+                    }
                 }
             }
         }
+        
+        //public IPerceivable GetFirstAgent()
+        //{
+        //    //IPerceivable[] iArray = g_PerceivedNPCAgents.ToArray();
+        //    return g_PerceivedNPCAgents.ElementAt(0);
+        //}
+
         public float CalculatePerceptionWeight(IPerceivable p) {
             return 0f;
         }

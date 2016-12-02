@@ -44,7 +44,6 @@ public class GreetingB : MonoBehaviour
     }
     protected Node trigger(Func<bool> a)
     {
-        //w1.GetComponent<NPCPerception>().FirstNPC();
         return new LeafAssert(a);
     }
     protected Node GoWithin(GameObject target, GameObject chaser)
