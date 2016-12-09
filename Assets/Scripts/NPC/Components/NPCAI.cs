@@ -36,7 +36,7 @@ namespace NPC {
         public IPathfinder CurrentPathfinder;
 
         [SerializeField]
-        private NavMeshAgent gNavMeshAgent;
+        private UnityEngine.AI.NavMeshAgent gNavMeshAgent;
 
         public Dictionary<string,IPathfinder> Pathfinders {
             get {
@@ -71,7 +71,7 @@ namespace NPC {
         public List<Vector3> FindPath(Vector3 target) {
             if (NavMeshAgentPathfinding) {
                 gNavMeshAgent.enabled = true;
-                NavMeshPath navMeshPath = new NavMeshPath();
+                UnityEngine.AI.NavMeshPath navMeshPath = new UnityEngine.AI.NavMeshPath();
                 gNavMeshAgent.CalculatePath(target,navMeshPath);
                 gNavMeshAgent.enabled = false;
                 return new List<Vector3>(navMeshPath.corners);
@@ -90,7 +90,7 @@ namespace NPC {
         private void InitPathfinders() {
             gPathfinders = new Dictionary<string, IPathfinder>();
             gPathfinders.Add("None", null);
-            gNavMeshAgent = GetComponent<NavMeshAgent>();
+            gNavMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         }
         #endregion
 

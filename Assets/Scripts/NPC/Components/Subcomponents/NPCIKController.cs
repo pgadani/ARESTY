@@ -8,44 +8,73 @@ namespace NPC {
     [System.Serializable]
     public class NPCIKController : MonoBehaviour {
 
+        #region Members
+
         /* Animator gAnimator */
         Animator gAnimator;
         NPCBody g_NPCBody;
-
-        /* Test Targets */
-        public Transform IK_TARGET_LEFT_FOOT;
-        public Transform IK_TARGET_RIGHT_FOOT;
+        NPCController g_NPCController;
+        
+        /* Targets */
         public Transform LOOK_AT_TARGET;
         public Transform GRAB_RIGHT_TARGET;
 
+        Vector3 g_RightFootPosition,
+            g_LeftFootPosition;
+
+        Quaternion g_RightFootRotation,
+            g_LeftFootRotation;
+
         /* Hints */
-        public Transform HINT_LEFT_KNEE;
-        public Transform HINT_RIGHT_KNEE;
+        [SerializeField]
+        Transform HINT_LEFT_KNEE;
+        [SerializeField]
+        Transform HINT_RIGHT_KNEE;
 
         /* Weights*/
         public float IK_WEIGHT;
+        public float IK_RIGHT_FOOT_WEIGHT = 0f;
+        public float IK_LEFT_FOOT_WEIGHT = 0f;
         public float MAX_LOOK_WEIGHT = 1f;
 
         private float g_CurrentLookWeight = 0.0f;
         private float g_LookSmoothness = 50.0f;
+        private bool g_FeetIK = false;
+        RaycastHit g_RayHit;
+        private static string m_AnimatorRightFootParam = "IK_Right_Foot";
+        private static string m_AnimatorLeftFootParam = "IK_Left_Foot";
+        private float g_ColliderRadiusCorrection;
 
         /* Enable disabled IK and COmponents during runtime */
         public bool IK_ACTIVE;
-        public bool USE_HINTS;
         public float REACH_DISTANCE = 0.5f;
 
+        /* Bones */
+        [SerializeField]
+        Transform HEAD;
+        [SerializeField]
+        Transform RIGHT_HAND;
+        [SerializeField]
+        Transform LEFT_HAND;
+        [SerializeField]
+        Transform RIGHT_FOOT;
+        [SerializeField]
+        Transform LEFT_FOOT;
+        [SerializeField]
+        Transform LEFT_KNEE;
+        [SerializeField]
+        Transform RIGHT_KNEE;
+        #endregion
+
+        #region Properties
         public Transform Head {
             get {
                 return HEAD;
             }
         }
+        #endregion
 
-        /* Bones */
-        Transform HEAD;
-        Transform RIGHT_HAND;
-        Transform LEFT_HAND;
-        Transform RIGHT_FOOT;
-        Transform LEFT_FOOT;
+        
 
         #region Unity_Functions
 
@@ -57,27 +86,45 @@ namespace NPC {
             } else {
                 gAnimator.applyRootMotion = true;
             }
+
+            // Initialize Bones
+            RIGHT_HAND = gAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+            LEFT_HAND = gAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
+            RIGHT_FOOT = gAnimator.GetBoneTransform(HumanBodyBones.RightFoot);
+            LEFT_FOOT = gAnimator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            HEAD = gAnimator.GetBoneTransform(HumanBodyBones.Head);
+            LEFT_KNEE = gAnimator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            RIGHT_KNEE = gAnimator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+
+            // Initialize Hints
+            HINT_LEFT_KNEE = new GameObject().transform;
+            HINT_RIGHT_KNEE = new GameObject().transform;
+            HINT_LEFT_KNEE.gameObject.name = "IK_HINT_Left_Knee";
+            HINT_RIGHT_KNEE.gameObject.name = "IK_HINT_Right_Knee";
+            HINT_LEFT_KNEE.parent = gAnimator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            HINT_RIGHT_KNEE.parent = gAnimator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+            HINT_LEFT_KNEE.localRotation = gAnimator.GetBoneTransform(HumanBodyBones.LeftLowerLeg).rotation;
+            HINT_RIGHT_KNEE.localRotation = gAnimator.GetBoneTransform(HumanBodyBones.RightLowerLeg).rotation;
+            HINT_LEFT_KNEE.localPosition = Vector3.zero;
+            HINT_RIGHT_KNEE.localPosition = Vector3.zero;
         }
 
         // Use this for initialization
         void Start() {
-            g_NPCBody = GetComponent<NPCBody>();
+
+            g_NPCController = GetComponent<NPCController>();
+            g_NPCBody = g_NPCController.Body;
             gAnimator = GetComponent<Animator>();
 
             if (gAnimator == null) {
-                Debug.Log("NPCIKController --> An animator controller is needed for IK, disabling component during runtime");
+                g_NPCController.Debug("NPCIKController --> An animator controller is needed for IK, disabling component during runtime");
                 this.enabled = false;
             }
 
-            // Find Bones
-            RIGHT_HAND  = gAnimator.GetBoneTransform(HumanBodyBones.RightHand);
-            LEFT_HAND   = gAnimator.GetBoneTransform(HumanBodyBones.LeftHand);
-            RIGHT_FOOT  = gAnimator.GetBoneTransform(HumanBodyBones.RightFoot);
-            LEFT_FOOT   = gAnimator.GetBoneTransform(HumanBodyBones.LeftFoot);
-            HEAD        = gAnimator.GetBoneTransform(HumanBodyBones.Head);
-
             // default weight
             IK_WEIGHT   = IK_WEIGHT < 0.1f ? 1f : IK_WEIGHT;
+            g_ColliderRadiusCorrection = GetComponent<CapsuleCollider>().radius;
+          
         }
 
         // Unity's main IK method called every frame
@@ -85,11 +132,11 @@ namespace NPC {
             if(g_NPCBody.IKEnabled) {
                 
                 /* Feet */
-                // DoFeetIK();
-                
+                if(g_FeetIK)
+                    DoFeetIK();
+
                 /* Look At */
                 DoLookAt();
-                
             }
         }
 
@@ -109,39 +156,88 @@ namespace NPC {
         }
 
         private void DoFeetIK() {
-            // set: Weights, Positions and Hints (of joints) and Rorations
-
-            // Main weights
-            gAnimator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, IK_WEIGHT);
-            gAnimator.SetIKPositionWeight(AvatarIKGoal.RightFoot, IK_WEIGHT);
-            // position
-            gAnimator.SetIKPosition(AvatarIKGoal.LeftFoot, IK_TARGET_LEFT_FOOT.position);
-            gAnimator.SetIKPosition(AvatarIKGoal.RightFoot, IK_TARGET_RIGHT_FOOT.position);
-            // hints
-            if (USE_HINTS) {
-                gAnimator.SetIKHintPositionWeight(AvatarIKHint.LeftKnee, IK_WEIGHT);
-                gAnimator.SetIKHintPositionWeight(AvatarIKHint.RightKnee, IK_WEIGHT);
-                gAnimator.SetIKHintPosition(AvatarIKHint.LeftKnee, HINT_LEFT_KNEE.position);
-                gAnimator.SetIKHintPosition(AvatarIKHint.RightKnee, HINT_RIGHT_KNEE.position);
+            
+            // Using animation curves - walk and idle
+            if(g_NPCBody.Speed == 0 && g_NPCBody.Orientation == 0) {
+                IK_RIGHT_FOOT_WEIGHT = IK_LEFT_FOOT_WEIGHT = 0.5f;
+            } else {
+                IK_RIGHT_FOOT_WEIGHT = gAnimator.GetFloat(m_AnimatorRightFootParam);
+                IK_LEFT_FOOT_WEIGHT = gAnimator.GetFloat(m_AnimatorLeftFootParam);
             }
-            // rotation
-            gAnimator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, IK_WEIGHT);
-            gAnimator.SetIKRotationWeight(AvatarIKGoal.RightFoot, IK_WEIGHT);
-            gAnimator.SetIKRotation(AvatarIKGoal.LeftFoot, IK_TARGET_LEFT_FOOT.rotation);
-            gAnimator.SetIKRotation(AvatarIKGoal.RightFoot, IK_TARGET_RIGHT_FOOT.rotation);
+
+            // Adjust Hints
+            if (g_NPCBody.IK_USE_HINTS) {
+                gAnimator.SetIKHintPositionWeight(AvatarIKHint.LeftKnee, 0.5f);
+                gAnimator.SetIKHintPositionWeight(AvatarIKHint.RightKnee, 0.5f);
+                gAnimator.SetIKHintPosition(AvatarIKHint.RightKnee, HINT_RIGHT_KNEE.position);
+                gAnimator.SetIKHintPosition(AvatarIKHint.LeftKnee, HINT_LEFT_KNEE.position);
+            }
+
+            // IK Feet Position Weight
+            gAnimator.SetIKPositionWeight(AvatarIKGoal.RightFoot, IK_RIGHT_FOOT_WEIGHT);
+            gAnimator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, IK_LEFT_FOOT_WEIGHT);
+
+            // IK Feet Rotation Weight
+            gAnimator.SetIKRotationWeight(AvatarIKGoal.RightFoot, IK_RIGHT_FOOT_WEIGHT);
+            gAnimator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, IK_LEFT_FOOT_WEIGHT);
+
+            // Feet Position
+            gAnimator.SetIKPosition(AvatarIKGoal.RightFoot, g_RightFootPosition);
+            gAnimator.SetIKPosition(AvatarIKGoal.LeftFoot, g_LeftFootPosition);
+
+            // Feet Rotation
+            gAnimator.SetIKRotation(AvatarIKGoal.RightFoot, g_RightFootRotation);
+            gAnimator.SetIKRotation(AvatarIKGoal.LeftFoot, g_LeftFootRotation);
         }
 
         #endregion
 
         #region Public_Functions
+
+        /// <summary>
+        /// Body calls UpdateIK when UpdateBody is called from the controller
+        /// </summary>
+        public void UpdateIK() {
+
+            Vector3 heightCorrection = (Vector3.up * g_NPCBody.IK_FEET_HEIGHT_EFFECTOR_CORRECTOR);
+
+            // Update feet
+            g_FeetIK = Physics.Raycast(RIGHT_FOOT.position + heightCorrection, Vector3.down, out g_RayHit);
+            g_RightFootPosition = Vector3.Lerp(g_RightFootPosition,
+                g_RayHit.point + (Vector3.up * g_NPCBody.IK_FEET_HEIGHT_CORRECTION) + (transform.forward * g_NPCBody.IK_FEET_FORWARD_CORRECTION), Time.deltaTime * 15f);
+            g_RightFootRotation = Quaternion.FromToRotation(Vector3.up, g_RayHit.normal) * transform.rotation;
+
+            g_FeetIK = Physics.Raycast(LEFT_FOOT.position + heightCorrection, Vector3.down, out g_RayHit);
+            g_LeftFootPosition = Vector3.Lerp(g_LeftFootPosition,
+                g_RayHit.point + (Vector3.up * g_NPCBody.IK_FEET_HEIGHT_CORRECTION) + (transform.forward * g_NPCBody.IK_FEET_FORWARD_CORRECTION), Time.deltaTime * 15f);
+            g_LeftFootRotation = Quaternion.FromToRotation(Vector3.up, g_RayHit.normal) * transform.rotation;
+
+            Debug.DrawRay(LEFT_FOOT.position + heightCorrection, Vector3.down, Color.red);
+            Debug.DrawRay(RIGHT_FOOT.position + heightCorrection, Vector3.down, Color.red);
+            Debug.DrawRay(transform.position + heightCorrection + (transform.forward * g_ColliderRadiusCorrection), (transform.forward + Vector3.down * 0.2f));
+
+            if (Physics.Raycast(transform.position + heightCorrection + (transform.forward * g_ColliderRadiusCorrection), (transform.forward + Vector3.down * 0.4f), out g_RayHit, 0.2f)) {
+                if(g_NPCBody.Speed > 0f) {
+                    transform.position = Vector3.Lerp(transform.position,
+                        new Vector3(transform.position.x, transform.position.y +  (g_RayHit.transform.localScale.y), transform.position.z), Time.deltaTime * 10f);
+                } else {
+                    g_RightFootPosition = new Vector3(g_RayHit.point.x, g_RayHit.transform.position.y + g_RayHit.transform.localScale.y, g_RayHit.point.z);
+                }
+            } else {
+                GetComponent<CapsuleCollider>().height = 1.8f;
+            }
+
+        }
+
+
         public bool CanBeReached(IPerceivable per) {
-            return Vector3.Distance(per.GetTransform().position, RIGHT_HAND.position)
-                <= REACH_DISTANCE;
+            return (Vector3.Distance(per.GetTransform().position, RIGHT_HAND.position) <= REACH_DISTANCE);
         } 
 
         public bool ReachFor(IPerceivable per) {
             return false;
         }
+        
         #endregion
         
         Transform LOOK_AT {

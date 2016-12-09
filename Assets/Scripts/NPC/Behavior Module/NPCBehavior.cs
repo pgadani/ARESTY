@@ -48,8 +48,6 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         );
     }
 
-
-    
     #endregion
 
     #region Private_Functions
@@ -98,6 +96,14 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
 
     public void SetEnable(bool e) {
         Enabled = e;
+    }
+
+    public bool IsUpdateable() {
+        return false;
+    }
+
+    public void TickModule() {
+        throw new NotImplementedException();
     }
 
     #endregion

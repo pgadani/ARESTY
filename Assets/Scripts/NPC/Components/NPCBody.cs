@@ -62,7 +62,7 @@ namespace NPC {
         #region Members
 
         [SerializeField]
-        NavMeshAgent gNavMeshAgent;
+        UnityEngine.AI.NavMeshAgent gNavMeshAgent;
         [SerializeField]
         Animator g_Animator;
         [SerializeField]
@@ -102,6 +102,7 @@ namespace NPC {
         private float g_CurrentVelocity         = 0.05f;
         private float g_TurningVelocity         = 0.05f;
         private float g_CurrentOrientation      = 0.0f;
+        private static string m_ColliderHeight = "COLLIDER_Height";
         private bool g_TargetLocationReached= false;
         private static int gHashJump = Animator.StringToHash("JumpLoco");
         private static int gHashIdle = Animator.StringToHash("Idle");
@@ -159,6 +160,12 @@ namespace NPC {
             }
         }
 
+        public float Orientation {
+            get {
+                return g_CurrentOrientation;
+            }
+        }
+
         public bool Navigating;
 
         [SerializeField]
@@ -169,6 +176,21 @@ namespace NPC {
 
         [SerializeField]
         public bool IKEnabled;
+
+        [SerializeField]
+        public float IK_FEET_HEIGHT_CORRECTION;
+
+        [SerializeField]
+        public float IK_FEET_FORWARD_CORRECTION;
+
+        [SerializeField]
+        public float IK_FEET_HEIGHT_EFFECTOR_CORRECTOR;
+
+        [SerializeField]
+        public float IK_FEET_STAIRS_INTERPOLATION;
+
+        [SerializeField]
+        public bool IK_USE_HINTS = true;
 
         [SerializeField]
         public bool UseAnimatorController;
@@ -218,7 +240,7 @@ namespace NPC {
         void Reset() {
             g_NPCController = GetComponent<NPCController>();
             g_NPCController.Debug("Initializing NPCBody ... ");
-            gNavMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+            gNavMeshAgent = gameObject.GetComponent<UnityEngine.AI.NavMeshAgent>();
             gRigidBody = gameObject.GetComponent<Rigidbody>();
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
@@ -226,7 +248,7 @@ namespace NPC {
             gIKController.hideFlags = HideFlags.HideInInspector;
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             if (gNavMeshAgent == null) {
-                gNavMeshAgent = gameObject.AddComponent<NavMeshAgent>();
+                gNavMeshAgent = gameObject.AddComponent<UnityEngine.AI.NavMeshAgent>();
                 gNavMeshAgent.autoBraking = true;
                 gNavMeshAgent.enabled = false;
                 g_NPCController.Debug("NPCBody requires a NavMeshAgent if navigation is on, adding a default one.");
@@ -264,7 +286,7 @@ namespace NPC {
             }
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
-            gNavMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+            gNavMeshAgent = gameObject.GetComponent<UnityEngine.AI.NavMeshAgent>();
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             gRigidBody = GetComponent<Rigidbody>();
             if (g_Animator == null || gNavMeshAgent == null) UseAnimatorController = false;
@@ -281,8 +303,14 @@ namespace NPC {
         #region Public_Funtions
         public void UpdateBody() {
             
-            UpdateNavigation();
-            UpdateOrientation();
+            if(IKEnabled) {
+                gIKController.UpdateIK();
+            }
+
+            if(!g_NPCController.MainAgent) {
+                UpdateNavigation();
+                UpdateOrientation();
+            }
 
             g_LastpdatedPosition = transform.position;
 
@@ -339,7 +367,6 @@ namespace NPC {
 
                 // apply curves if needed
                 if(UseCurves) {
-                    // update curves here
                 }
             
                 // set animator
@@ -601,7 +628,8 @@ namespace NPC {
         private void UpdateOrientation() {
             if(g_CurrentStateFwd != LOCO_STATE.FORWARD && !Navigating) {
                 Vector3 targetDirection = g_TargetOrientation - transform.position;
-                float angle = Vector3.Angle(targetDirection, transform.forward);
+                Vector3 v1 = new Vector3(targetDirection.x, 0, targetDirection.z);
+                float angle = Vector3.Angle(v1, transform.forward);
                 LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
                 if (angle > 5.0f) {
                     Move(d);
