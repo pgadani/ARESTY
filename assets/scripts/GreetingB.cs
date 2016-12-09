@@ -64,17 +64,17 @@ public class GreetingB : MonoBehaviour
     {
         Func<bool> at1 = () => (Vector3.Distance(p.transform.position, place1.transform.position) < 1);
         Func<bool> at2 = () => (Vector3.Distance(p.transform.position, place2.transform.position) < 1);
-        Func<bool> moving = () => (p.GetComponent<NPCBody>().HasTarget());
+        //Func<bool> moving = () => (p.GetComponent<NPCBody>().HasTarget());
         
         return
             new Sequence(
                 new DecoratorInvert(new Sequence(
-                    new DecoratorInvert(trigger(moving)),
+                    //new DecoratorInvert(trigger(moving)),
                     new DecoratorInvert(trigger(at1)),
                     Goto(p, place1))
                 ),
                 new DecoratorInvert(new Sequence(
-                    new DecoratorInvert(trigger(moving)),
+                    //new DecoratorInvert(trigger(moving)),
                     new DecoratorInvert(trigger(at2)),
                     Goto(p, place2))
                 )
