@@ -22,7 +22,7 @@ namespace NPC {
         Vector3     GetPosition();
         Vector3     GetForwardDirection();
         float       GetAgentRadius();
-        Vector3     GetMainLookAtPoint();
+        Transform   GetMainLookAtPoint();
     }
 
 }

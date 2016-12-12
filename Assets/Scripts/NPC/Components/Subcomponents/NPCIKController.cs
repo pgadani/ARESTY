@@ -38,8 +38,9 @@ namespace NPC {
         public float MAX_LOOK_WEIGHT = 1f;
 
         private float g_CurrentLookWeight = 0.0f;
-        private float g_LookSmoothness = 50.0f;
+        private float g_LookSmoothness = 1f;
         private bool g_FeetIK = false;
+
         RaycastHit g_RayHit;
         private static string m_AnimatorRightFootParam = "IK_Right_Foot";
         private static string m_AnimatorLeftFootParam = "IK_Left_Foot";
@@ -139,6 +140,10 @@ namespace NPC {
 
                 /* Look At */
                 DoLookAt();
+
+
+                /* Do Hands */
+                DoHandsIK();
             }
         }
 
@@ -146,15 +151,19 @@ namespace NPC {
 
         #region Private_Functions
 
+        private void DoHandsIK() {
+
+        }
+
         private void DoLookAt() {
             /* Do look IK */
             if (LOOK_AT_TARGET != null) {
                 gAnimator.SetLookAtPosition(LOOK_AT_TARGET.position);
-                g_CurrentLookWeight = Mathf.Max(Mathf.Lerp(0.0f, 1.0f, Time.deltaTime * g_LookSmoothness), MAX_LOOK_WEIGHT);
-                gAnimator.SetLookAtWeight(g_CurrentLookWeight);
+                g_CurrentLookWeight = Mathf.Lerp(g_CurrentLookWeight, 1.0f, Time.deltaTime * g_NPCBody.IK_LOOK_AT_SMOOTH);
             } else {
-                g_CurrentLookWeight = Mathf.Lerp(1.0f, 0.0f, Time.deltaTime * g_LookSmoothness);
+                g_CurrentLookWeight = Mathf.Lerp(g_CurrentLookWeight, 0.0f, Time.deltaTime * g_NPCBody.IK_LOOK_AT_SMOOTH);
             }
+            gAnimator.SetLookAtWeight(g_CurrentLookWeight);
         }
 
         private void DoFeetIK() {
@@ -224,7 +233,7 @@ namespace NPC {
             } else g_FeetIK = false;
 
             if (Physics.Raycast(transform.position + heightCorrection + (transform.forward * g_ColliderRadiusCorrection), (transform.forward + Vector3.down * 0.4f), out g_RayHit, 0.2f)) {
-                if(!g_NPCController.Perception.IsEntityPerceived(g_RayHit.collider.transform)) { 
+                if(!g_NPCController.Perception.IsEntityPerceived(g_RayHit.collider.transform)) {
                     if (g_NPCBody.Speed > 0f) {
                         transform.position = Vector3.Lerp(transform.position,
                             new Vector3(transform.position.x, transform.position.y + (g_RayHit.transform.localScale.y), transform.position.z), Time.deltaTime * 10f);

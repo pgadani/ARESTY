@@ -44,8 +44,14 @@ namespace NPC {
         DISSAPOINTMENT,
         [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         HURRAY,
-        [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
-        GRAB_FRONT
+        [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        GRAB_FRONT,
+        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE)]
+        TALK_LONG,
+        [NPCAnimation("Gest_Talk_Short", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        TALK_SHORT,
+        [NPCAnimation("Gest_Think", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        THINK
     }
 
     public enum NAV_STATE {
@@ -103,7 +109,7 @@ namespace NPC {
         private float g_TurningVelocity         = 0.05f;
         private float g_CurrentOrientation      = 0.0f;
         
-        private bool g_TargetLocationReached= false;
+        private bool g_TargetLocationReached= true;
         private static int gHashJump = Animator.StringToHash("JumpLoco");
         private static int gHashIdle = Animator.StringToHash("Idle");
         private Vector3 g_TargetOrientation;                                // Wheres the NPC currently looking at
@@ -129,9 +135,15 @@ namespace NPC {
 
         #region Properties
 
+        public List<Vector3> NavigationPath {
+            get {
+                return g_NavQueue;
+            }
+        }
+
         public float AgentRepulsionWeight = 0.6f;
 
-        public float DistanceTolerance  = 1f;
+        public float DistanceTolerance  = 1.25f;
         
         public float Mass {
             get {
@@ -167,6 +179,7 @@ namespace NPC {
         }
 
         public bool Navigating;
+        public bool Oriented = false;
 
         [SerializeField]
         public NAV_STATE Navigation;
@@ -194,6 +207,9 @@ namespace NPC {
 
         [SerializeField]
         public bool IK_USE_HINTS = true;
+
+        [SerializeField]
+        public float  IK_LOOK_AT_SMOOTH = 1f;
 
         [SerializeField]
         public bool UseAnimatorController;
@@ -298,6 +314,7 @@ namespace NPC {
             if(g_NPCController.TestTargetLocation != null) {
                 GoTo( new List<Vector3>() { g_NPCController.TestTargetLocation.position } );
             }
+            g_TargetLocation = transform.position;
             g_TargetOrientation = transform.position + transform.forward;
         }
 
@@ -445,12 +462,30 @@ namespace NPC {
 
         [NPCAffordance("OrientTowards")]        
         public void OrientTowards(Vector3 target) {
+            Oriented = g_TargetOrientation == target;
             g_TargetOrientation = target;
+        }
+
+        public Vector3 TargetLocation {
+            get {
+                return g_NavQueue.Count == 0 ?
+                    transform.position : g_NavQueue[g_NavQueue.Count-1];
+            }
+        }
+
+        public Vector3 TargetOrientation {
+            get {
+                return g_TargetOrientation; 
+            }
         }
 
         [NPCAffordance("StartLookAt")]
         public void StartLookAt(Transform t) {
-            gIKController.LOOK_AT_TARGET = t;
+            IPerceivable p = t.GetComponent<IPerceivable>();
+            if (p != null) {
+                gIKController.LOOK_AT_TARGET = p.GetMainLookAtPoint();
+            } else 
+                gIKController.LOOK_AT_TARGET = t;
         }
 
         [NPCAffordance("StopLookAt")]
@@ -491,6 +526,8 @@ namespace NPC {
             g_TargetOrientation = transform.position + transform.forward;
             g_NavQueue.Clear();
             Navigating = false;
+            g_TargetLocation = transform.position;
+            g_TargetLocationReached = !Navigating;
         }
 
         /// <summary>
@@ -554,6 +591,12 @@ namespace NPC {
             g_TargetOrientation = g_TargetLocation;
             float distance = Vector3.Distance(transform.position, g_TargetLocation);
             Vector3 targetDirection = g_TargetLocation - transform.position;
+            if((distance <= DistanceTolerance*2f) && g_NavQueue.Count == 1) {
+                RaycastHit h;
+                if (Physics.Raycast(Head.position, targetDirection, out h, 2f)) {
+                    goto NextPoint;
+                }
+            }
             if(EnableSocialForces) {
                 ComputeSocialForces(ref targetDirection);
             }
@@ -569,11 +612,14 @@ namespace NPC {
                         Move(d);
                     } else Move(LOCO_STATE.FRONT);
                 }
-            } else {
-                g_TargetOrientation = transform.position + transform.forward;
-                g_NavQueue.RemoveAt(0);
-                Navigating = g_TargetLocationReached = g_NavQueue.Count > 0;
+                return;
             }
+NextPoint:
+            g_TargetOrientation = transform.position + transform.forward;
+            g_NavQueue.RemoveAt(0);
+            Navigating = g_NavQueue.Count > 0;
+            g_TargetLocationReached = !Navigating;
+            
         }
 
         private float Direction(Vector3 direction) {
@@ -592,7 +638,7 @@ namespace NPC {
         private void ComputeSocialForces(ref Vector3 currentTarget) {
             currentTarget = Vector3.Normalize(currentTarget);
             Vector3 preferredForce = Mass * ((currentTarget * g_CurrentSpeed) - Velocity) * Time.deltaTime;
-            Vector3 repulsionForce = ComputeAgentsRepulsionForce() + ComputeWallsRepulsionForce();
+            Vector3 repulsionForce = ComputeAgentsRepulsionForce();
             Vector3 proximityForce = ComputeProximityForce();
             currentTarget += preferredForce + repulsionForce;
         }
@@ -612,15 +658,13 @@ namespace NPC {
             return totalForces;
         }
 
-        private Vector3 ComputeWallsRepulsionForce() {
-            return Vector3.zero;
-        }
-
         private Vector3 ComputeProximityForce() {
             Vector3 totalForce = Vector3.zero;
             foreach (IPerceivable p in g_NPCController.Perception.PerceivedEntities) {
                 float distance = Vector3.Distance(transform.position, p.GetPosition());
                 float radii = AgentRadius + p.GetAgentRadius();
+                if (g_TargetLocation == p.GetPosition() && distance <= radii * 1.5f)
+                    StopNavigation();
                 float scale = 0f;
                 Vector3 away;
                 if (p.GetNPCEntityType() == PERCEIVEABLE_TYPE.NPC) {
@@ -641,9 +685,9 @@ namespace NPC {
                 Vector3 v1 = new Vector3(targetDirection.x, 0, targetDirection.z);
                 float angle = Vector3.Angle(v1, transform.forward);
                 LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
-                if (angle > 5.0f) {
+                if (angle > 15.0f) {
                     Move(d);
-                }
+                } else Oriented = true;
             }
         }
 

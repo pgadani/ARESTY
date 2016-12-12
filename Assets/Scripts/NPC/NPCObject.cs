@@ -112,6 +112,10 @@ namespace NPC {
         public override string ToString() {
             return Name;
         }
+
+        Transform IPerceivable.GetMainLookAtPoint() {
+            return transform;
+        }
         #endregion
     }
 

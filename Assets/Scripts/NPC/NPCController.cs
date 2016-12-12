@@ -138,24 +138,27 @@ namespace NPC {
         }
 
         public void RunTo(Vector3 t) {
-            List<Vector3> path = gAI.FindPath(t);
-            if (path.Count < 1) {
-                Debug("NPCController --> No path found to target location");
-            } else {
-                if (path.Count == 1)
-                    Debug("NPCController --> No pathfinder enabled, defaulting to steering");
-                gBody.RunTo(path);
+            if(t != gBody.TargetLocation) {
+                List<Vector3> path =  gAI.FindPath(t);
+                if (path.Count < 1) {
+                    Debug("NPCController --> No path found to target location");
+                } else {
+                    if (path.Count == 1)
+                    gBody.RunTo(path);
+                }
             }
         }
         
         public void GoTo(Vector3 t) {
-            List<Vector3> path = gAI.FindPath(t);
-            if (path.Count < 1) {
-                Debug("NPCController --> No path found to target location");
-            } else {
-                if (path.Count == 1)
-                    Debug("NPCController --> No pathfinder enabled, defaulting to steering");
-                gBody.GoTo(path);
+            if (t != gBody.TargetLocation) {
+                List<Vector3> path = gAI.FindPath(t);
+                if (path.Count < 1) {
+                    Debug("NPCController --> No path found to target location");
+                } else {
+                    if (path.Count == 1)
+                        Debug("NPCController --> No pathfinder enabled, defaulting to steering");
+                    gBody.GoTo(path);
+                }
             }
         }
 
@@ -288,8 +291,8 @@ namespace NPC {
             return PERCEIVEABLE_TYPE.NPC;
         }
 
-        public virtual Vector3 GetMainLookAtPoint() {
-            return gBody.Head.position;
+        public virtual Transform GetMainLookAtPoint() {
+            return gBody.Head;
         }
 
         #endregion

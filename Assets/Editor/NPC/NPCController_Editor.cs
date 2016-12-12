@@ -34,6 +34,7 @@ namespace NPC {
         private const string label_IKUseHints = "Use IK Hints";
         private const string label_IKFeetStairsInt = "IK Stairs Interpolation";
         private const string label_IKFeetEnabled = "IK Feet Enabled";
+        private const string label_IKLookSmoothness = "IK Look Smoothing";
 
         [SerializeField]
         int selectedPathfinder;
@@ -141,6 +142,7 @@ namespace NPC {
                     gController.Body.IK_USE_HINTS = (bool)EditorGUILayout.Toggle(label_IKUseHints, (bool)gController.Body.IK_USE_HINTS);
                     gController.Body.IK_FEET_Enabled = (bool)EditorGUILayout.Toggle(label_IKFeetEnabled, (bool)gController.Body.IK_FEET_Enabled);
                     if (gController.Body.IK_FEET_Enabled) {
+                        gController.Body.IK_LOOK_AT_SMOOTH = (float)EditorGUILayout.Slider(label_IKLookSmoothness, gController.Body.IK_LOOK_AT_SMOOTH, 1f, 10f);
                         gController.Body.IK_FEET_HEIGHT_CORRECTION = (float)EditorGUILayout.Slider(label_IKFeetHeight, gController.Body.IK_FEET_HEIGHT_CORRECTION, 0f, 0.5f);
                         gController.Body.IK_FEET_FORWARD_CORRECTION = (float)EditorGUILayout.Slider(label_IKFeetForward, gController.Body.IK_FEET_FORWARD_CORRECTION, -0.5f, 0.5f);
                         gController.Body.IK_FEET_HEIGHT_EFFECTOR_CORRECTOR = (float)EditorGUILayout.Slider(label_IKFeetEffectorCorrector, gController.Body.IK_FEET_HEIGHT_EFFECTOR_CORRECTOR, 0f, 0.3f);

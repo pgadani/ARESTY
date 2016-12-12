@@ -34,8 +34,8 @@ namespace NPC {
             return transform.forward;
         }
 
-        public Vector3 GetMainLookAtPoint() {
-            return transform.position;
+        public Transform GetMainLookAtPoint() {
+            return transform;
         }
 
         public PERCEIVEABLE_TYPE GetNPCEntityType() {

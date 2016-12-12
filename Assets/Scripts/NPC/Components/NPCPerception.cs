@@ -114,12 +114,10 @@ namespace NPC {
             if(p != null) {
                 Vector3 diff = p.GetTransform().position - transform.position;
                 float angle = Vector3.Angle(transform.forward, diff);
-                if(!g_PerceivedObjects.Contains(p) && angle <= g_HalfViewAngle) {        
-                    g_Controller.Debug("I see an " + p);
+                if(!g_PerceivedObjects.Contains(p) && angle <= g_HalfViewAngle) {
                     if (p.GetNPCEntityType() == PERCEIVEABLE_TYPE.NPC) g_PerceivedNPCAgents.Add(p);
                     g_PerceivedObjects.Add(p);
                 } else if (angle >= g_HalfViewAngle) {
-                    g_Controller.Debug("I can't see the " + p + " no more");
                     g_PerceivedObjects.Remove(p);
                 }
             }
