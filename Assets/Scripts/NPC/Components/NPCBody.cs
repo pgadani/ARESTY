@@ -40,7 +40,7 @@ namespace NPC {
         DIE,
         [NPCAnimation("Gest_Anger", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         ANGER,
-        [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,3.11f)]
         DISSAPOINTMENT,
         [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         HURRAY,
@@ -102,7 +102,7 @@ namespace NPC {
         private float g_CurrentVelocity         = 0.05f;
         private float g_TurningVelocity         = 0.05f;
         private float g_CurrentOrientation      = 0.0f;
-        private static string m_ColliderHeight = "COLLIDER_Height";
+        
         private bool g_TargetLocationReached= false;
         private static int gHashJump = Animator.StringToHash("JumpLoco");
         private static int gHashIdle = Animator.StringToHash("Idle");
@@ -176,6 +176,9 @@ namespace NPC {
 
         [SerializeField]
         public bool IKEnabled;
+
+        [SerializeField]
+        public bool IK_FEET_Enabled;
 
         [SerializeField]
         public float IK_FEET_HEIGHT_CORRECTION;
@@ -301,6 +304,11 @@ namespace NPC {
         #endregion
 
         #region Public_Funtions
+
+        public NPCAnimation Animation(GESTURE_CODE g) {
+            return m_Gestures[g];
+        }
+
         public void UpdateBody() {
             
             if(IKEnabled) {
@@ -452,6 +460,8 @@ namespace NPC {
 
         /// <summary>
         /// The caller might specify an optional parameter depeding on the type of animation.
+        /// The optional parameter could be a float or a boolean. Triggers do not require
+        /// parameters.
         /// </summary>
         /// <param name="gesture"></param>
         /// <param name="o"></param>
@@ -463,7 +473,7 @@ namespace NPC {
                     g_Animator.SetTrigger(anim.Name);
                     break;
                 case ANIMATION_PARAM_TYPE.BOOLEAN:
-                    bool b = (bool) o;
+                    bool b = o == null ? !g_Animator.GetBool(anim.Name) : (bool) o;
                     g_Animator.SetBool(anim.Name, b);
                     break;
                 case ANIMATION_PARAM_TYPE.FLOAT:

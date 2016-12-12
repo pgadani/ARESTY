@@ -23,7 +23,7 @@ namespace NPC {
         public static float MIN_VIEW_ANGLE = 75f;
         public static float MAX_VIEW_ANGLE = 180f;
         public static float MIN_PERCEPTION_FIELD = 2f;
-        public static float MAX_PERCEPTION_FIELD = 10f;
+        public static float MAX_PERCEPTION_FIELD = 20f;
         #endregion
 
         #region Perception
@@ -137,6 +137,12 @@ namespace NPC {
         #endregion
 
         #region Public_Functions
+
+        public bool IsEntityPerceived(Transform t) {
+            IPerceivable p = t.GetComponent<IPerceivable>();
+            return p != null && PerceivedEntities.Contains(p); 
+        }
+
         public void UpdateHalfViewAngle() {
             g_HalfViewAngle = ViewAngle / 2.0f;
         }

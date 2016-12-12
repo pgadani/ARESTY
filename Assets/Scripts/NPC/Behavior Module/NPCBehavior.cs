@@ -48,10 +48,32 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         );
     }
 
+    public Node NPCBehavior_DoGesture(GESTURE_CODE gesture, System.Object o = null) {
+        return new LeafInvoke(
+            () => Behavior_DoGesture(gesture,o)
+        );
+    }
+
+    public Node NPCBehavior_DoTimedGesture(GESTURE_CODE gesture, System.Object o = null) {
+        return new Sequence(
+            new LeafInvoke(() => Behavior_DoGesture(gesture, o)),
+            new LeafWait((long)(g_NPCController.Body.Animation(gesture).Duration*1000))
+        );
+    }
+
     #endregion
 
     #region Private_Functions
-    
+
+    private RunStatus Behavior_DoGesture(GESTURE_CODE gest, System.Object o = null) {
+        if(g_NPCController.Body.IsGesturePlaying(gest)) {
+            return RunStatus.Running;
+        } else {
+            g_NPCController.Body.DoGesture(gest,o);
+            return RunStatus.Success;
+        }
+    }
+
     private RunStatus Behavior_GoTo(Val<Vector3> location) {
         Vector3 val = location.Value;
         if (g_NPCController.Body.Navigating)
