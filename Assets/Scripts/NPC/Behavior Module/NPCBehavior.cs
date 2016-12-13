@@ -93,6 +93,7 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
             return RunStatus.Running;
         } else {
             g_NPCController.Body.DoGesture(gest,o);
+            // TODO - fix this
             return RunStatus.Success;
         }
     }
