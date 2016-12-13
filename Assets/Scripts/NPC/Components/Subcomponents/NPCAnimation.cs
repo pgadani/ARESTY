@@ -21,7 +21,12 @@ namespace NPC {
         public int AnimationHash;
         public ANIMATION_PARAM_TYPE ParamType;
         public ANIMATION_LAYER Layer;
-        public float Duration;
+        
+        /// <summary>
+        /// Duration in milliseconds
+        /// </summary>
+        readonly public float Duration;
+
         public bool Timed;
         public NPCAnimation(string name, ANIMATION_PARAM_TYPE paramType, ANIMATION_LAYER layer) {
             this.Name = name;
@@ -29,7 +34,7 @@ namespace NPC {
             this.Layer = layer;
         }
         public NPCAnimation(string name, ANIMATION_PARAM_TYPE paramType, ANIMATION_LAYER layer, float duration) : this(name,paramType,layer) {
-            Duration = duration;
+            Duration = duration * 1000; // store duration in milliseconds
             Timed = true;
         }
     }

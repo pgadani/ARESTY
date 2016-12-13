@@ -42,16 +42,19 @@ namespace NPC {
         ANGER,
         [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,3.11f)]
         DISSAPOINTMENT,
-        [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,2.05f)]
         HURRAY,
         [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
         GRAB_FRONT,
-        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE)]
+        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE,4f)]
         TALK_LONG,
-        [NPCAnimation("Gest_Talk_Short", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        [NPCAnimation("Gest_Talk_Short", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,1.12f)]
         TALK_SHORT,
         [NPCAnimation("Gest_Think", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
-        THINK
+        THINK,
+        [NPCAnimation("Gest_Greet_At_Distance", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        GREET_AT_DISTANCE
+
     }
 
     public enum NAV_STATE {
@@ -83,6 +86,10 @@ namespace NPC {
 
         private Vector3 g_TargetLocation;
         private Vector3 g_LastpdatedPosition;
+
+        // Timed gestures / IK controller
+        private NPCTimer g_Timer;
+        
 
         private static string g_AnimParamSpeed      = "Speed";
         private static string g_AnimParamDirection  = "Direction";
@@ -130,10 +137,12 @@ namespace NPC {
         private float TurnRightAngle { get; set; }
 
         private NPCController g_NPCController;
-        
+
         #endregion
 
         #region Properties
+
+        public GESTURE_CODE LastGesture;
 
         public List<Vector3> NavigationPath {
             get {
@@ -180,6 +189,9 @@ namespace NPC {
 
         public bool Navigating;
         public bool Oriented = false;
+
+        [SerializeField]
+        public float StepHeight = 0.3f;
 
         [SerializeField]
         public NAV_STATE Navigation;
@@ -236,7 +248,7 @@ namespace NPC {
         }
         
         public bool IsGesturePlaying(GESTURE_CODE gest) {
-            return g_Animator.GetCurrentAnimatorStateInfo(0).shortNameHash == m_Gestures[gest].AnimationHash;
+            return LastGesture == gest && !g_Timer.Finished;
         }
 
         public bool IsAtTargetLocation(Vector3 targetLoc) {
@@ -294,6 +306,7 @@ namespace NPC {
         }
 
         void Start() {
+
             g_NPCController = GetComponent<NPCController>();
 
             // Initialize static members for all NPC
@@ -316,6 +329,7 @@ namespace NPC {
             }
             g_TargetLocation = transform.position;
             g_TargetOrientation = transform.position + transform.forward;
+            g_Timer = new NPCTimer();
         }
 
         #endregion
@@ -340,7 +354,11 @@ namespace NPC {
             g_LastpdatedPosition = transform.position;
 
             if (UseAnimatorController) {
-                
+
+                // Update gestures timer
+                if(!g_Timer.Finished)
+                    g_Timer.UpdateTimer();
+
                 // If accidentally checked
                 if (g_Animator == null) {
                     g_NPCController.Debug("NPCBody --> No Animator in agent, disabling UseAnimatorController");
@@ -501,22 +519,24 @@ namespace NPC {
         /// <param name="gesture"></param>
         /// <param name="o"></param>
         [NPCAffordance("DoGesture")]
-        public void DoGesture(GESTURE_CODE gesture, System.Object o = null) {
+        public void DoGesture(GESTURE_CODE gesture, System.Object o = null, bool timed = false) {
             NPCAnimation anim = m_Gestures[gesture];
-            switch(anim.ParamType) {
+            switch (anim.ParamType) {
                 case ANIMATION_PARAM_TYPE.TRIGGER:
                     g_Animator.SetTrigger(anim.Name);
                     break;
                 case ANIMATION_PARAM_TYPE.BOOLEAN:
-                    bool b = o == null ? !g_Animator.GetBool(anim.Name) : (bool) o;
+                    bool b = o == null ? !g_Animator.GetBool(anim.Name) : (bool)o;
                     g_Animator.SetBool(anim.Name, b);
                     break;
                 case ANIMATION_PARAM_TYPE.FLOAT:
-                    float f = (float) o;
+                    float f = (float)o;
                     g_Animator.SetFloat(anim.Name, f);
                     break;
-
             }
+            LastGesture = gesture;
+            if (timed)
+                g_Timer.StartTimer(m_Gestures[gesture].Duration);
         }
 
         [NPCAffordance("StopNavigation")]

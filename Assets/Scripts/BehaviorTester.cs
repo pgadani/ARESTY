@@ -44,25 +44,17 @@ public class BehaviorTester : MonoBehaviour {
                             ApproachAndWait(targetLocation),
                             g_Agent.NPCBehavior_OrientTowards(secondAgent.transform.position),
                             new SequenceParallel(
-                                g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.HURRAY),
+                                g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.GREET_AT_DISTANCE),
                                 g_AgentB.NPCBehavior_GoTo(g_Agent.transform,false)
                                 ),
                             new SequenceParallel(
-                                g_Agent.NPCBehavior_LookAt(g_AgentB.transform,true),
-                                g_AgentB.NPCBehavior_LookAt(g_Agent.transform, true)
+                                    g_Agent.NPCBehavior_LookAt(g_AgentB.transform,true),
+                                    g_AgentB.NPCBehavior_LookAt(g_Agent.transform, true)
                                 ),
-                            new DecoratorLoop(
-                                new Sequence(
-                                    new SequenceShuffle(
-                                        g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT),
-                                        g_AgentB.NPCBehavior_DoGesture(GESTURE_CODE.TALK_LONG),
-                                    new SequenceShuffle(
-                                        g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.TALK_LONG),
-                                        g_AgentB.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT))
-                                    )
-                                )
-                            )
-                    );
+                            g_Agent.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG),
+                            g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.HURRAY),
+                            g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG)
+                        );
         Node trigger = new DecoratorLoop(new LeafAssert(act));
         Node root = new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new SequenceParallel(trigger, goTo)));
         return root;
