@@ -23,7 +23,7 @@ namespace NPC {
         public static float MIN_VIEW_ANGLE = 75f;
         public static float MAX_VIEW_ANGLE = 180f;
         public static float MIN_PERCEPTION_FIELD = 2f;
-        public static float MAX_PERCEPTION_FIELD = 10f;
+        public static float MAX_PERCEPTION_FIELD = 20f;
         #endregion
 
         #region Perception
@@ -114,12 +114,10 @@ namespace NPC {
             if(p != null) {
                 Vector3 diff = p.GetTransform().position - transform.position;
                 float angle = Vector3.Angle(transform.forward, diff);
-                if(!g_PerceivedObjects.Contains(p) && angle <= g_HalfViewAngle) {        
-                    g_Controller.Debug("I see an " + p);
+                if(!g_PerceivedObjects.Contains(p) && angle <= g_HalfViewAngle) {
                     if (p.GetNPCEntityType() == PERCEIVEABLE_TYPE.NPC) g_PerceivedNPCAgents.Add(p);
                     g_PerceivedObjects.Add(p);
                 } else if (angle >= g_HalfViewAngle) {
-                    g_Controller.Debug("I can't see the " + p + " no more");
                     g_PerceivedObjects.Remove(p);
                 }
             }
@@ -137,6 +135,12 @@ namespace NPC {
         #endregion
 
         #region Public_Functions
+
+        public bool IsEntityPerceived(Transform t) {
+            IPerceivable p = t.GetComponent<IPerceivable>();
+            return p != null && PerceivedEntities.Contains(p); 
+        }
+
         public void UpdateHalfViewAngle() {
             g_HalfViewAngle = ViewAngle / 2.0f;
         }

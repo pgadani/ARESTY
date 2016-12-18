@@ -20,7 +20,7 @@ public class GreetingB : MonoBehaviour
     private Func<bool> w1moving;
     private Func<bool> w2moving;
     private BehaviorAgent bAgent;
-    
+
     // Use this for initialization
     void Start()
     {
@@ -48,7 +48,7 @@ public class GreetingB : MonoBehaviour
     }
     protected Node GoWithin(GameObject target, GameObject chaser)
     {
-        return 
+        return
             new LeafInvoke(() => chaser.GetComponent<NPCController>().GoTo(target.transform.position))
             ;
 
@@ -64,7 +64,7 @@ public class GreetingB : MonoBehaviour
         Func<bool> at1 = () => (Vector3.Distance(p.transform.position, place1.transform.position) < 1);
         Func<bool> at2 = () => (Vector3.Distance(p.transform.position, place2.transform.position) < 1);
         Func<bool> moving = () => (p.GetComponent<NPCBody>().HasTarget());
-        
+
         return
             new Sequence(
                 new DecoratorInvert(new Sequence(
@@ -100,7 +100,7 @@ public class GreetingB : MonoBehaviour
 
         return new DecoratorLoop(
             new Sequence(
-                //new LeafWait(10000),
+            //new LeafWait(10000),
                 new DecoratorForceStatus(RunStatus.Success, (wander(w1, p1, p2))),
                 new DecoratorForceStatus(RunStatus.Success, (wander(w2, p3, p4))),
                 new DecoratorForceStatus(RunStatus.Success,
@@ -108,15 +108,37 @@ public class GreetingB : MonoBehaviour
                     trigger(percieve),
                     new DecoratorForceStatus(RunStatus.Success, new Sequence(
                         new LeafProbability(0.5f),
-                        //waveto(w1),
-                        //wave(w1, ),
-                        //new LeafInvoke(() => w1.GetComponent<NPCPerception>().PerceivedAgents.getComponent<Animator>.Play("Wave")),
-                        //new LeafInvoke(() => (w1.GetComponent<NPCPerception>().FirstP()).getComponent<Animator>().Play("Wave")),
-                        //new LeafInvoke(() => (w1.GetComponent<NPCPerception>().FirstP())),
+            //waveto(w1),
+            //wave(w1, ),
+            //new LeafInvoke(() => w1.GetComponent<NPCPerception>().PerceivedAgents.getComponent<Animator>.Play("Wave")),
+            //new LeafInvoke(() => (w1.GetComponent<NPCPerception>().FirstP()).getComponent<Animator>().Play("Wave")),
+            //new LeafInvoke(() => (w1.GetComponent<NPCPerception>().FirstP())),
+            //new Race(
+            //    new Sequence(
+            //        Goto(w2, w1.transform),
+            //        new LeafWait(100000),
+            //        new LeafWait(500)
+            //        ),
+            //    new DecoratorForceStatus(RunStatus.Success, new Selector(
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000)),
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000)),
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000)),
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000)),
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000)),
+            //        trigger(percieve2),
+            //        new DecoratorForceStatus(RunStatus.Failure, new LeafWait(1000))
+            //        ))
+            //),
+            //Goto(w2, w2.transform),
                         new LeafInvoke(() => g2Animator.Play("Wave")),
                         new LeafInvoke(() => gAnimator.Play("Wave")))),
                         new LeafWait(10000)
-                    
+
                 )
             )
         ));

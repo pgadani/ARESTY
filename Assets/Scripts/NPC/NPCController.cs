@@ -110,6 +110,8 @@ namespace NPC {
         }
 
         public void LoadNPCModules() {
+            if(g_NPCModules == null)
+                g_NPCModules = new Dictionary<string, INPCModule>();
             INPCModule[] modules = gameObject.GetComponents<INPCModule>();
             foreach (INPCModule m in modules) {
                 if (!ContainsModule(m)) {
@@ -135,14 +137,31 @@ namespace NPC {
             return g_NPCModules != null && g_NPCModules.ContainsKey(mod.NPCModuleName());
         }
 
+<<<<<<< HEAD
+=======
+        public void RunTo(Vector3 t) {
+            if(t != gBody.TargetLocation) {
+                List<Vector3> path =  gAI.FindPath(t);
+                if (path.Count < 1) {
+                    Debug("NPCController --> No path found to target location");
+                } else {
+                    if (path.Count == 1)
+                    gBody.RunTo(path);
+                }
+            }
+        }
+        
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         public void GoTo(Vector3 t) {
-            List<Vector3> path = gAI.FindPath(t);
-            if (path.Count < 1) {
-                Debug("NPCController --> No path found to target location");
-            } else {
-                if (path.Count == 1)
-                    Debug("NPCController --> No pathfinder enabled, defaulting to steering");
-                gBody.GoTo(path);
+            if (t != gBody.TargetLocation) {
+                List<Vector3> path = gAI.FindPath(t);
+                if (path.Count < 1) {
+                    Debug("NPCController --> No path found to target location");
+                } else {
+                    if (path.Count == 1)
+                        Debug("NPCController --> No pathfinder enabled, defaulting to steering");
+                    gBody.GoTo(path);
+                }
             }
         }
 
@@ -173,8 +192,16 @@ namespace NPC {
         }
 	
         void FixedUpdate() {
+
             gPerception.UpdatePerception();
             gBody.UpdateBody();
+
+            // Main NPC Modular updating call
+            foreach(INPCModule m in g_NPCModules.Values) {
+                if (m.IsUpdateable()) {
+                    m.TickModule();
+                }
+            }
         }
         
 	    void Update () {
@@ -200,7 +227,7 @@ namespace NPC {
         #endregion
 
         #region Private_Functions
-        
+
         private void InitializeNPCComponents() {
             gAI = gameObject.AddComponent<NPCAI>();
             gPerception = gameObject.AddComponent<NPCPerception>();
@@ -235,35 +262,20 @@ namespace NPC {
         #endregion
 
         #region IPerceivable
-        PERCEIVE_WEIGHT IPerceivable.GetPerceptionWeightType() {
+
+        public virtual PERCEIVE_WEIGHT GetPerceptionWeightType() {
             return PERCEIVE_WEIGHT.WEIGHTED;
         }
 
-        public Transform GetTransform() {
+        public virtual Transform GetTransform() {
             return this.transform;
-        }
-
-        public Vector3 CalculateAgentRepulsionForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateAgentSlidingForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateRepulsionForce(IPerceivable p) {
-            return Vector3.zero;
-        }
-
-        public Vector3 CalculateSlidingForce(IPerceivable p) {
-            return Vector3.zero;
         }
 
         public Vector3 GetCurrentVelocity() {
             return gBody.Velocity;
         }
 
-        public Vector3 GetPosition() {
+        public virtual Vector3 GetPosition() {
             return transform.position;
         }
 
@@ -275,8 +287,12 @@ namespace NPC {
             return gBody.AgentRadius;
         }
 
-        public PERCEIVEABLE_TYPE GetNPCEntityType() {
-            return EntityType;
+        public virtual PERCEIVEABLE_TYPE GetNPCEntityType() {
+            return PERCEIVEABLE_TYPE.NPC;
+        }
+
+        public virtual Transform GetMainLookAtPoint() {
+            return gBody.Head;
         }
         #endregion
 

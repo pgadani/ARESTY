@@ -21,11 +21,50 @@ namespace NPC {
         FALL
     }
 
+<<<<<<< HEAD
+=======
+    /// <summary>
+    /// To add gestures, just add it to the animator controller then define it here with the NPCAnimation System.Attribute
+    /// </summary>
+    public enum GESTURE_CODE {
+        [NPCAnimation("Gest_Acknowledge", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ACKNOWLEDGE,
+        [NPCAnimation("Gest_Angry", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ANGRY,
+        [NPCAnimation("Gest_Why", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        WHY,
+        [NPCAnimation("Gest_Short_Wave", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        WAVE_HELLO,
+        [NPCAnimation("Gest_Negate", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        NEGATE,
+        [NPCAnimation("Body_Die", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        DIE,
+        [NPCAnimation("Gest_Anger", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ANGER,
+        [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,3.11f)]
+        DISSAPOINTMENT,
+        [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,2.05f)]
+        HURRAY,
+        [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        GRAB_FRONT,
+        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE,4f)]
+        TALK_LONG,
+        [NPCAnimation("Gest_Talk_Short", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,1.12f)]
+        TALK_SHORT,
+        [NPCAnimation("Gest_Think", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        THINK,
+        [NPCAnimation("Gest_Greet_At_Distance", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        GREET_AT_DISTANCE
+
+    }
+
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
     public enum NAV_STATE {
         DISABLED = 0,
         STEERING_NAV,
         NAVMESH_NAV
     }
+
     #endregion
 
     [System.Serializable]
@@ -34,7 +73,7 @@ namespace NPC {
 
         #region Members
         [SerializeField]
-        NavMeshAgent gNavMeshAgent;
+        UnityEngine.AI.NavMeshAgent gNavMeshAgent;
         [SerializeField]
         Animator g_Animator;
         [SerializeField]
@@ -70,7 +109,12 @@ namespace NPC {
         private float g_CurrentVelocity         = 0.05f;
         private float g_TurningVelocity         = 0.1f;
         private float g_CurrentOrientation      = 0.0f;
+<<<<<<< HEAD
         private bool g_Navigating = false;
+=======
+        
+        private bool g_TargetLocationReached= true;
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         private static int gHashJump = Animator.StringToHash("JumpLoco");
         private static int gHashIdle = Animator.StringToHash("Idle");
 
@@ -94,9 +138,21 @@ namespace NPC {
 
         #region Properties
 
+        public List<Vector3> NavigationPath {
+            get {
+                return g_NavQueue;
+            }
+        }
+
         public float AgentRepulsionWeight = 0.6f;
+<<<<<<< HEAD
         public float DistanceTolerance  = 1f;
 
+=======
+
+        public float DistanceTolerance  = 1.25f;
+        
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         public float Mass {
             get {
                 return gRigidBody.mass;
@@ -124,7 +180,14 @@ namespace NPC {
             }
         }
 
+        public float Orientation {
+            get {
+                return g_CurrentOrientation;
+            }
+        }
+
         public bool Navigating;
+        public bool Oriented = false;
 
         [SerializeField]
         public NAV_STATE Navigation;
@@ -134,6 +197,27 @@ namespace NPC {
 
         [SerializeField]
         public bool IKEnabled;
+
+        [SerializeField]
+        public bool IK_FEET_Enabled;
+
+        [SerializeField]
+        public float IK_FEET_HEIGHT_CORRECTION;
+
+        [SerializeField]
+        public float IK_FEET_FORWARD_CORRECTION;
+
+        [SerializeField]
+        public float IK_FEET_HEIGHT_EFFECTOR_CORRECTOR;
+
+        [SerializeField]
+        public float IK_FEET_STAIRS_INTERPOLATION;
+
+        [SerializeField]
+        public bool IK_USE_HINTS = true;
+
+        [SerializeField]
+        public float  IK_LOOK_AT_SMOOTH = 1f;
 
         [SerializeField]
         public bool UseAnimatorController;
@@ -159,6 +243,18 @@ namespace NPC {
             }
         }
         
+<<<<<<< HEAD
+=======
+        public bool IsGesturePlaying(GESTURE_CODE gest) {
+            return g_Animator.GetCurrentAnimatorStateInfo(0).shortNameHash == m_Gestures[gest].AnimationHash;
+        }
+
+        public bool IsAtTargetLocation(Vector3 targetLoc) {
+            return g_TargetLocationReached 
+                && targetLoc == g_TargetLocation;
+        }
+
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         public bool IsIdle {
             get {
                 return
@@ -174,13 +270,15 @@ namespace NPC {
         void Reset() {
             g_NPCController = GetComponent<NPCController>();
             g_NPCController.Debug("Initializing NPCBody ... ");
-            gNavMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+            gNavMeshAgent = gameObject.GetComponent<UnityEngine.AI.NavMeshAgent>();
             gRigidBody = gameObject.GetComponent<Rigidbody>();
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
+            if(gIKController == null) gIKController = gameObject.AddComponent<NPCIKController>();
+            gIKController.hideFlags = HideFlags.HideInInspector;
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             if (gNavMeshAgent == null) {
-                gNavMeshAgent = gameObject.AddComponent<NavMeshAgent>();
+                gNavMeshAgent = gameObject.AddComponent<UnityEngine.AI.NavMeshAgent>();
                 gNavMeshAgent.autoBraking = true;
                 gNavMeshAgent.enabled = false;
                 g_NPCController.Debug("NPCBody requires a NavMeshAgent if navigation is on, adding a default one.");
@@ -203,13 +301,14 @@ namespace NPC {
             if(gIKController == null) {
                 gIKController = gameObject.AddComponent<NPCIKController>();
             }
+            g_NPCController.EntityType = PERCEIVEABLE_TYPE.NPC;
         }
 
         void Start() {
             g_NPCController = GetComponent<NPCController>();
             g_Animator = gameObject.GetComponent<Animator>();
             gIKController = gameObject.GetComponent<NPCIKController>();
-            gNavMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+            gNavMeshAgent = gameObject.GetComponent<UnityEngine.AI.NavMeshAgent>();
             gCapsuleCollider = gameObject.GetComponent<CapsuleCollider>();
             gRigidBody = GetComponent<Rigidbody>();
             if (g_Animator == null || gNavMeshAgent == null) UseAnimatorController = false;
@@ -218,14 +317,35 @@ namespace NPC {
             if(g_NPCController.TestTargetLocation != null) {
                 GoTo(g_NPCController.TestTargetLocation.position);
             }
+<<<<<<< HEAD
+=======
+            g_TargetLocation = transform.position;
+            g_TargetOrientation = transform.position + transform.forward;
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         }
 
         #endregion
 
         #region Public_Funtions
+
+        public NPCAnimation Animation(GESTURE_CODE g) {
+            return m_Gestures[g];
+        }
+
         public void UpdateBody() {
             
+<<<<<<< HEAD
             UpdateNavigation();
+=======
+            if(IKEnabled) {
+                gIKController.UpdateIK();
+            }
+
+            if(!g_NPCController.MainAgent) {
+                UpdateNavigation();
+                UpdateOrientation();
+            }
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
 
             g_LastpdatedPosition = transform.position;
 
@@ -278,7 +398,6 @@ namespace NPC {
 
                 // apply curves if needed
                 if(UseCurves) {
-                    // update curves here
                 }
             
                 // set animator
@@ -316,6 +435,7 @@ namespace NPC {
                     break;
             }
         }
+<<<<<<< HEAD
         //
         public bool HasTarget()
         {
@@ -324,16 +444,105 @@ namespace NPC {
         //
         public void GoTo(Vector3 location) {
             SetIdle();
+=======
+
+        #region Affordances
+
+        /// <summary>
+        /// No path finding involved.
+        /// </summary>
+        /// <param name="location"></param>
+        [NPCAffordance("WalkTowards")]
+        public void WalkTowards(Vector3 location) {
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
             g_NavQueue.Clear();
             g_NavQueue.Add(location);
         }
 
         public void GoTo(List<Vector3> location) {
+<<<<<<< HEAD
             SetIdle();
+=======
+            g_RunForce = false;
+            Navigating = true;
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
             g_NavQueue.Clear();
             g_NavQueue = location;
         }
 
+<<<<<<< HEAD
+=======
+        [NPCAffordance("OrientTowards")]        
+        public void OrientTowards(Vector3 target) {
+            Oriented = g_TargetOrientation == target;
+            g_TargetOrientation = target;
+        }
+
+        public Vector3 TargetLocation {
+            get {
+                return g_NavQueue.Count == 0 ?
+                    transform.position : g_NavQueue[g_NavQueue.Count-1];
+            }
+        }
+
+        public Vector3 TargetOrientation {
+            get {
+                return g_TargetOrientation; 
+            }
+        }
+
+        [NPCAffordance("StartLookAt")]
+        public void StartLookAt(Transform t) {
+            IPerceivable p = t.GetComponent<IPerceivable>();
+            if (p != null) {
+                gIKController.LOOK_AT_TARGET = p.GetMainLookAtPoint();
+            } else 
+                gIKController.LOOK_AT_TARGET = t;
+        }
+
+        [NPCAffordance("StopLookAt")]
+        public void StopLookAt() {
+            gIKController.LOOK_AT_TARGET = null;
+        }
+
+        /// <summary>
+        /// The caller might specify an optional parameter depeding on the type of animation.
+        /// The optional parameter could be a float or a boolean. Triggers do not require
+        /// parameters.
+        /// </summary>
+        /// <param name="gesture"></param>
+        /// <param name="o"></param>
+        [NPCAffordance("DoGesture")]
+        public void DoGesture(GESTURE_CODE gesture, System.Object o = null) {
+            NPCAnimation anim = m_Gestures[gesture];
+            switch(anim.ParamType) {
+                case ANIMATION_PARAM_TYPE.TRIGGER:
+                    g_Animator.SetTrigger(anim.Name);
+                    break;
+                case ANIMATION_PARAM_TYPE.BOOLEAN:
+                    bool b = o == null ? !g_Animator.GetBool(anim.Name) : (bool) o;
+                    g_Animator.SetBool(anim.Name, b);
+                    break;
+                case ANIMATION_PARAM_TYPE.FLOAT:
+                    float f = (float) o;
+                    g_Animator.SetFloat(anim.Name, f);
+                    break;
+
+            }
+        }
+
+        [NPCAffordance("StopNavigation")]
+        public void StopNavigation() {
+            g_RunForce = false;
+            SetIdle();
+            g_TargetOrientation = transform.position + transform.forward;
+            g_NavQueue.Clear();
+            Navigating = false;
+            g_TargetLocation = transform.position;
+            g_TargetLocationReached = !Navigating;
+        }
+
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         /// <summary>
         /// Used to start and stop looking around
         /// </summary>
@@ -370,14 +579,14 @@ namespace NPC {
                     if (g_NavQueue.Count > 0) {
                         g_NPCController.Debug("NPCBody --> Handling steering with queue: " + g_NavQueue.Count);
                         HandleSteering();
-                    } g_Navigating = false;
+                    }
                 } else {
                     g_TargetLocation = g_NavQueue[0];
                     g_NavQueue.Clear();
                     HandleNavAgent();
                 }
             } else {
-                g_Navigating = false;
+                Navigating = false;
             }
         }
 
@@ -395,13 +604,18 @@ namespace NPC {
             float distance = Vector3.Distance(transform.position, g_TargetLocation);
             // desired goal
             Vector3 targetDirection = g_TargetLocation - transform.position;
+            if((distance <= DistanceTolerance*2f) && g_NavQueue.Count == 1) {
+                RaycastHit h;
+                if (Physics.Raycast(Head.position, targetDirection, out h, 2f)) {
+                    goto NextPoint;
+                }
+            }
             if(EnableSocialForces) {
                 ComputeSocialForces(ref targetDirection);
             }
             float angle = Vector3.Angle(targetDirection, transform.forward);
             LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
-            g_Navigating = distance > NavDistanceThreshold;
-            if (g_Navigating) {
+            if (distance > NavDistanceThreshold) {
                 if (angle > 45.0f
                     && g_CurrentStateFwd != LOCO_STATE.FORWARD) {
                     Move(d);
@@ -411,10 +625,20 @@ namespace NPC {
                         Move(d);
                     } else Move(LOCO_STATE.FRONT);
                 }
+<<<<<<< HEAD
             } else {
                 // discard the point
                 g_NavQueue.RemoveAt(0);
+=======
+                return;
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
             }
+NextPoint:
+            g_TargetOrientation = transform.position + transform.forward;
+            g_NavQueue.RemoveAt(0);
+            Navigating = g_NavQueue.Count > 0;
+            g_TargetLocationReached = !Navigating;
+            
         }
 
         private float Direction(Vector3 direction) {
@@ -433,7 +657,7 @@ namespace NPC {
         private void ComputeSocialForces(ref Vector3 currentTarget) {
             currentTarget = Vector3.Normalize(currentTarget);
             Vector3 preferredForce = Mass * ((currentTarget * g_CurrentSpeed) - Velocity) * Time.deltaTime;
-            Vector3 repulsionForce = ComputeAgentsRepulsionForce() + ComputeWallsRepulsionForce();
+            Vector3 repulsionForce = ComputeAgentsRepulsionForce();
             Vector3 proximityForce = ComputeProximityForce();
             currentTarget += preferredForce + repulsionForce;
         }
@@ -453,15 +677,13 @@ namespace NPC {
             return totalForces;
         }
 
-        private Vector3 ComputeWallsRepulsionForce() {
-            return Vector3.zero;
-        }
-
         private Vector3 ComputeProximityForce() {
             Vector3 totalForce = Vector3.zero;
             foreach (IPerceivable p in g_NPCController.Perception.PerceivedEntities) {
                 float distance = Vector3.Distance(transform.position, p.GetPosition());
                 float radii = AgentRadius + p.GetAgentRadius();
+                if (g_TargetLocation == p.GetPosition() && distance <= radii * 1.5f)
+                    StopNavigation();
                 float scale = 0f;
                 Vector3 away;
                 if (p.GetNPCEntityType() == PERCEIVEABLE_TYPE.NPC) {
@@ -475,6 +697,55 @@ namespace NPC {
             }
             return totalForce;
         }
+<<<<<<< HEAD
+=======
+
+        private void UpdateOrientation() {
+            if(g_CurrentStateFwd != LOCO_STATE.FORWARD && !Navigating) {
+                Vector3 targetDirection = g_TargetOrientation - transform.position;
+                Vector3 v1 = new Vector3(targetDirection.x, 0, targetDirection.z);
+                float angle = Vector3.Angle(v1, transform.forward);
+                LOCO_STATE d = Direction(targetDirection) < 1.0f ? LOCO_STATE.LEFT : LOCO_STATE.RIGHT;
+                if (angle > 15.0f) {
+                    Move(d);
+                } else Oriented = true;
+            }
+        }
+
+        /// <summary>
+        /// Initialize all defined enum gestures by using reflection
+        /// </summary>
+        private void InitializeGestures() {
+            Array a = Enum.GetValues(typeof(GESTURE_CODE));
+            m_Gestures = new Dictionary<GESTURE_CODE, NPCAnimation>();
+            foreach(var t in a) {
+                Type type = t.GetType();
+                var name = Enum.GetName(type, t);
+                var att = type.GetField(name).GetCustomAttributes(typeof(NPCAnimation),false);
+                NPCAnimation anim = (NPCAnimation)att[0];
+                anim.AnimationHash = Animator.StringToHash(anim.Name);
+                m_Gestures.Add((GESTURE_CODE)t, anim);
+            }
+            g_NPCController.Debug("modular NPC GESTURES successfully initialized: " + m_Gestures.Count);
+        }
+
+        /// <summary>
+        /// Initialize all existing affordances
+        /// </summary>
+        private void InitializeAffordances() {
+            Array a  = typeof(NPCBody).GetMethods();
+            m_Affordances = new Dictionary<NPCAffordance, string>();
+            foreach(MethodInfo m in a) {
+                object[] att = m.GetCustomAttributes(typeof(NPCAffordance),false);
+                if(att.Length == 1) {
+                    NPCAffordance aff = (NPCAffordance)att[0];
+                    m_Affordances.Add(aff, aff.Name);
+                }
+            }
+            g_NPCController.Debug("modular NPC AFFORDANCES successfully initialized: " + m_Affordances.Count);
+        }
+
+>>>>>>> e0987625e7ad608f43f81d2f93a9d7d2ef0ad0aa
         #endregion
     }
 
