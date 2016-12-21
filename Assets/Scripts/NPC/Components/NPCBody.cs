@@ -142,7 +142,7 @@ namespace NPC {
 
         #region Properties
 
-        public GESTURE_CODE LastGesture;
+        private GESTURE_CODE LastGesture;
 
         public List<Vector3> NavigationPath {
             get {

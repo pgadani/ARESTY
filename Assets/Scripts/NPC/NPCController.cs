@@ -143,7 +143,6 @@ namespace NPC {
                 if (path.Count < 1) {
                     Debug("NPCController --> No path found to target location");
                 } else {
-                    if (path.Count == 1)
                     gBody.RunTo(path);
                 }
             }
@@ -155,8 +154,6 @@ namespace NPC {
                 if (path.Count < 1) {
                     Debug("NPCController --> No path found to target location");
                 } else {
-                    if (path.Count == 1)
-                        Debug("NPCController --> No pathfinder enabled, defaulting to steering");
                     gBody.GoTo(path);
                 }
             }
@@ -246,10 +243,10 @@ namespace NPC {
                 g_SelectedEffect.transform.parent = gameObject.transform;
                 g_SelectedEffect.layer = LayerMask.NameToLayer("Ignore Raycast");
                 g_SelectedEffect.GetComponent<MeshCollider>().enabled = false;
-                g_SelectedEffect.transform.localScale = new Vector3(0.3f, 1.0f, 0.3f);
+                g_SelectedEffect.transform.localScale = new Vector3(0.15f, 1.0f, 0.15f);
                 g_SelectedEffect.transform.rotation = transform.rotation;
                 g_SelectedEffect.name = SELECTION_EFFECT;
-                g_SelectedEffect.transform.localPosition = new Vector3(0f, 0.2f, 0f);
+                g_SelectedEffect.transform.localPosition = new Vector3(0f, 0.4f, 0f);
                 g_SelectedEffect.AddComponent<MeshRenderer>();
                 MeshRenderer mr = g_SelectedEffect.GetComponent<MeshRenderer>();
                 mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
