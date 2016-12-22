@@ -35,6 +35,7 @@ namespace NPC {
         private const string label_IKFeetStairsInt = "IK Stairs Interpolation";
         private const string label_IKFeetEnabled = "IK Feet Enabled";
         private const string label_IKLookSmoothness = "IK Look Smoothing";
+        private const string label_StepHeight = "Step Height";
 
         [SerializeField]
         int selectedPathfinder;
@@ -149,6 +150,7 @@ namespace NPC {
                         gController.Body.IK_FEET_STAIRS_INTERPOLATION = (float)EditorGUILayout.Slider(label_IKFeetStairsInt, gController.Body.IK_FEET_STAIRS_INTERPOLATION, 0f, 20f);
                     }
                 }
+                gController.Body.StepHeight = (float)EditorGUILayout.FloatField(label_StepHeight, (float)gController.Body.StepHeight);
                 gController.Body.UseAnimatorController = (bool)EditorGUILayout.Toggle(label_AnimatorEnabled, (bool)gController.Body.UseAnimatorController);
                 gController.Body.UseCurves = (bool)EditorGUILayout.Toggle(label_UseAnimCurves, (bool)gController.Body.UseCurves);
                 gController.Body.EnableSocialForces = (bool)EditorGUILayout.Toggle(label_UseSocialForces, (bool)gController.Body.EnableSocialForces);

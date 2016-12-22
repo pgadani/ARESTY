@@ -29,7 +29,8 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
     
     private NPCController g_NPCController;
     public bool Enabled = true;
-    
+    private bool g_GestureRunning = false;
+
     #endregion
 
     #region Unity_Methods
@@ -62,18 +63,27 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         );
     }
 
-    public Node NPCBehavior_DoGesture(GESTURE_CODE gesture, System.Object o = null) {
-        g_NPCController.Debug("Gesturing");
+    public Node NPCBehavior_GoTo(Val<Vector3> t, bool run) {
         return new LeafInvoke(
-            () => Behavior_DoGesture(gesture,o)
+            () => Behavior_GoTo(t, run)
+        );
+    }
+
+    public Node NPCBehavior_Stop() {
+        g_NPCController.Debug("Stopping");
+        return new LeafInvoke(
+            () => Behavior_Stop()
         );
     }
 
     public Node NPCBehavior_DoTimedGesture(GESTURE_CODE gesture, System.Object o = null) {
-        g_NPCController.Debug("Gesturign Timed");
-        return new Sequence(
-            new LeafInvoke(() => Behavior_DoGesture(gesture, o)),
-            new LeafWait((long)(g_NPCController.Body.Animation(gesture).Duration*1000))
+        return NPCBehavior_DoGesture(gesture, o, true);
+    }
+
+    public Node NPCBehavior_DoGesture(GESTURE_CODE gesture, System.Object o = null, bool timed = false) {
+        g_NPCController.Debug("Gesturing");
+        return new LeafInvoke(
+            () => Behavior_DoGesture(gesture,o, timed)
         );
     }
 
@@ -88,19 +98,50 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         return g_NPCController.Body.Oriented ? RunStatus.Success : RunStatus.Running;
     }
 
-    private RunStatus Behavior_DoGesture(GESTURE_CODE gest, System.Object o = null) {
-        if(g_NPCController.Body.IsGesturePlaying(gest)) {
+    private RunStatus Behavior_DoGesture(GESTURE_CODE gest, System.Object o = null, bool timed = false) {
+        if (g_NPCController.Body.IsGesturePlaying(gest)) {
             return RunStatus.Running;
-        } else {
-            g_NPCController.Body.DoGesture(gest,o);
-            // TODO - fix this
+        } else if (g_GestureRunning) {
+            g_GestureRunning = false;
+            g_NPCController.Debug("Finished gesture");
             return RunStatus.Success;
+        }  else {
+            try {
+                g_NPCController.Body.DoGesture(gest, o, timed);
+                g_GestureRunning = true;
+                return RunStatus.Running;
+            } catch (System.Exception e ) {
+                g_NPCController.Debug("Could not initialize gesture with error: " + e.Message);
+                return RunStatus.Failure;
+            }
+        }
+        
+    }
+
+    private RunStatus Behavior_GoTo(Val<Vector3> t, bool run) {
+        Vector3 val = t.Value;
+        if (g_NPCController.Body.IsAtTargetLocation(val)) {
+            g_NPCController.Debug("Finished go to");
+            return RunStatus.Success;
+            // return RunStatus.Running; // may be better to keep node running since val could change?
+        }
+        else {
+            try {
+                if (run)
+                    g_NPCController.RunTo(val);
+                else g_NPCController.GoTo(val);
+                return RunStatus.Running;
+            } catch(System.Exception e) {
+                // this will occur if the target is unreacheable
+                return RunStatus.Failure;
+            }
         }
     }
 
     private RunStatus Behavior_GoTo(Transform t, bool run) {
         Vector3 val = t.position;
         if (g_NPCController.Body.IsAtTargetLocation(val)) {
+            g_NPCController.Debug("Finished go to");
             return RunStatus.Success;
         }
         else {
@@ -116,6 +157,11 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
         }
     }
 
+    private RunStatus Behavior_Stop() {
+        g_NPCController.Body.StopNavigation();
+        return RunStatus.Success;
+    }
+
     private RunStatus Behavior_StopLookAt() {
         g_NPCController.Body.StopLookAt();
         return RunStatus.Success;
@@ -123,6 +169,7 @@ public class NPCBehavior : MonoBehaviour, INPCModule {
 
     private RunStatus Behavior_LookAt(Transform t) {
         g_NPCController.Body.StartLookAt(t);
+        g_NPCController.Debug("Finished look at");
         return RunStatus.Success;
     }
 

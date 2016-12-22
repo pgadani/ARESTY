@@ -236,7 +236,7 @@ namespace NPC {
                 if(!g_NPCController.Perception.IsEntityPerceived(g_RayHit.collider.transform)) {
                     if (g_NPCBody.Speed > 0f) {
                         transform.position = Vector3.Lerp(transform.position,
-                            new Vector3(transform.position.x, transform.position.y + (g_RayHit.transform.localScale.y), transform.position.z), Time.deltaTime * 10f);
+                            new Vector3(transform.position.x, transform.position.y + g_NPCBody.StepHeight, transform.position.z), Time.deltaTime * 10f);
                     } else {
                         g_RightFootPosition = new Vector3(g_RayHit.point.x, g_RayHit.transform.position.y + g_RayHit.transform.localScale.y, g_RayHit.point.z);
                     }

@@ -51,9 +51,9 @@ public class BehaviorTester : MonoBehaviour {
                                     g_Agent.NPCBehavior_LookAt(g_AgentB.transform,true),
                                     g_AgentB.NPCBehavior_LookAt(g_Agent.transform, true)
                                 ),
-                            g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.TALK_LONG,true),
-                            g_AgentB.NPCBehavior_DoGesture(GESTURE_CODE.HURRAY,true),
-                            g_AgentB.NPCBehavior_DoGesture(GESTURE_CODE.TALK_LONG,true)
+                            g_Agent.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG),
+                            g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.HURRAY),
+                            g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG)
                         );
         Node trigger = new DecoratorLoop(new LeafAssert(act));
         Node root = new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new SequenceParallel(trigger, goTo)));
