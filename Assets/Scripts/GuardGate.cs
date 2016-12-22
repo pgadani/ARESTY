@@ -6,13 +6,14 @@ using NPC;
 
 public class GuardGate : MonoBehaviour {
     private BehaviorAgent behaviorAgent;
-    public GameObject guard;
+    private GameObject guard;
     public GameObject guest;
     public GameObject gate;
     private Animator anim;
 
     // Use this for initialization
     void Start() {
+        guard = gameObject;
         anim = guard.GetComponent<Animator>();
         behaviorAgent = new BehaviorAgent(this.BuildTreeRoot());
         BehaviorManager.Instance.Register(behaviorAgent);
@@ -47,19 +48,21 @@ public class GuardGate : MonoBehaviour {
     protected Node BuildTreeRoot()
     {
         return new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new Sequence(
-                Goto(guest, gate.transform.position + new Vector3(0, 0, 2)),
+                //Goto(guest, gate.transform.position + new Vector3(0, 0, 2)),
                 new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new Sequence(
                     trigger(() => Vector3.Distance(guest.transform.position, gate.transform.position) < 4),
                     Goto(guard, gate.transform.position + new Vector3(0, 0, -2)),
                     new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new Sequence(
-                        trigger(() => Vector3.Distance(guard.transform.position, gate.transform.position)<4),
+                        trigger(() => guard.GetComponent<NPCBody>().IsAtTargetLocation(gate.transform.position + new Vector3(0, 0, -2))),
                         new LeafWait(1000),
-                        //new LeafInvoke(() => anim.Play("Acknowledge")),
-                        Goto(guest, gate.transform.position + new Vector3(15, 0, -5)),
+                        // GATE OPENING ANIMATION
+                        new LeafInvoke(() => anim.Play("Grab_Front")),
+                        //Goto(guest, gate.transform.position + new Vector3(15, 0, -5)),
                         new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new Sequence(
                             trigger(() => Vector3.Distance(guest.transform.position, gate.transform.position) > 10),
                             new LeafWait(1000),
-                            //new LeafInvoke(() => anim.Play("Acknowledge")),
+                            // GATE CLOSING ANIMATION
+                            new LeafInvoke(() => anim.Play("Grab_Front")),
                             Goto(guard, gate.transform.position + new Vector3(10, 0, -10))
                         )))
                     )))
@@ -67,3 +70,9 @@ public class GuardGate : MonoBehaviour {
         )));
     }
 }
+/*
+Need to:
+Fix up animations for opening/closing gate
+Complete wander method (or integrate with nav mechanic)
+Is guest object preset? May need to restructure code around gate
+*/
