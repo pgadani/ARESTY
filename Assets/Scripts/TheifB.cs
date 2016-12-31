@@ -159,10 +159,10 @@ public class TheifB : MonoBehaviour
                         new Race(
                             new Sequence(new LeafWait(1000000), new LeafWait(100)),//arbitrary wait time until safe,
                             new Selector(
-                                checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),
-                                checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),
-                                checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),
-                                checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP(),checkGP()
+                                checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(),
+                                checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(),
+                                checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(),
+                                checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP(), checkGP()
                             )
                         )
                     )

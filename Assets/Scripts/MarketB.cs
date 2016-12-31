@@ -4,7 +4,8 @@ using TreeSharpPlus;
 using System;
 using NPC;
 
-public class MarketB : MonoBehaviour {
+public class MarketB : MonoBehaviour
+{
 
     private NPCBehavior b_Agent, s_Agent;
     public GameObject seller;
