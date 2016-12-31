@@ -11,8 +11,11 @@ public class MarketB : MonoBehaviour {
     public GameObject buyer;
     public Transform p1;//bounds on wander
     public Transform p2;
+    public GameObject target;
     public Transform booth_p; // position in from of market booth
     Animator gAnimator;
+    Animator sAnimator;
+    Animator bAnimator;
     private BehaviorAgent bAgent;
     private int price;
 
@@ -75,14 +78,11 @@ public class MarketB : MonoBehaviour {
     }
     protected Node BuildRoot()
     {
-        Func<bool> atTarget = () => (Vector3.Distance(theif.transform.position, target.transform.position) > 3);
-        //Func<bool> seen = () => theif.GetComponent<NPCPerception>().Perceiving;//does he see 
-        Func<bool> seen = () => theif.GetComponent<NPCPerception>().PerceivedAgents.Count <= 0;
         Func<bool> badprice = () => price > 4;
         return new DecoratorLoop(
             new Sequence(
                 new DecoratorForceStatus(RunStatus.Success,
-                    wander(buyer, bound1, bound2)),//idle wander behavior
+                    wander(buyer, p1, p2)),//idle wander behavior
             //new LeafProbability(0.1f),
                 new DecoratorForceStatus(RunStatus.Success,
                     new Sequence(
@@ -91,10 +91,10 @@ public class MarketB : MonoBehaviour {
                         new LeafInvoke(() => bAnimator.Play("Wave")),
                         new LeafInvoke(() => sAnimator.Play("Wave")),
                         new LeafInvoke(() => buyer.GetComponent<NPCBody>().LookAround(true)),
-                        new DecoratorLoop(
+                        new DecoratorForceStatus(
                             RunStatus.Success,
                             new Sequence(
-                                trigger(goodprice),
+                                new DecoratorInvert(trigger(badprice)),
             //play some appropriate animation
                                 new LeafProbability(0.1f),
                                 barter()

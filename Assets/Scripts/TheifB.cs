@@ -16,6 +16,7 @@ public class TheifB : MonoBehaviour
     private BehaviorAgent bAgent;
     Animator gAnimator;
     Animator g2Animator;
+    Animator g3Animator;
     private TagTree tag;  //so we want to use the tag behavior to do something
 
     // Use this for initialization
