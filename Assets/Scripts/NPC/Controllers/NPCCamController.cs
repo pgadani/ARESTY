@@ -68,6 +68,7 @@ namespace NPC {
         #region Members
         NPCControlManager g_NPCControlManager;
         float PanSmoothness = 0.1f;
+        public float Isometric_Y_Angle = 90f;
         NPCController Target = null;
         bool gPanning = false;
         bool gCloseUp = false;
@@ -84,6 +85,18 @@ namespace NPC {
             if (Target != null) {
                 SetThirdPersonView();
                 CurrentMode = CAMERA_MODE.THIRD_PERSON;
+            } else {
+                switch(CurrentMode) {
+                    case CAMERA_MODE.ISOMETRIC:
+                        SetIsometricView();
+                        break;
+                    case CAMERA_MODE.FIRST_PERSON:
+                        SetFirstPersonView();
+                        break;
+                    case CAMERA_MODE.THIRD_PERSON:
+                        SetThirdPersonView();
+                        break;
+                }
             }
             if(g_NPCControlManager == null) {
                 Debug.Log("NPCCamController --> No NPCControlManager with the NPCCamController enabled");
@@ -200,16 +213,16 @@ namespace NPC {
         private void HandleIsometricCamera() {
             float speedModifier = Input.GetKey(KeyCode.LeftShift) ? Speed * ModMultiplier : Speed * 1f;
             if (Input.GetKey(KeyCode.W)) {
-                transform.position += Vector3.right * (Time.deltaTime * speedModifier);
+                transform.position += Vector3.forward * (Time.deltaTime * speedModifier);
             } else if (Input.GetKey(KeyCode.S)) {
                 if (transform.position.x > MinLimits.x)
-                    transform.position -= Vector3.right * (Time.deltaTime * speedModifier);
+                    transform.position -= Vector3.forward * (Time.deltaTime * speedModifier);
             }
             if (Input.GetKey(KeyCode.A)) {
-                transform.position += Vector3.forward * (Time.deltaTime * speedModifier);
+                transform.position += Vector3.left * (Time.deltaTime * speedModifier);
             } else if (Input.GetKey(KeyCode.D)) {
                 if(transform.position.z > MinLimits.z)
-                    transform.position -= Vector3.forward * (Time.deltaTime * speedModifier);
+                    transform.position -= Vector3.left * (Time.deltaTime * speedModifier);
             }
 
             if(Input.GetAxis("Mouse ScrollWheel") > 0.0f) {
@@ -257,7 +270,7 @@ namespace NPC {
         private void SetIsometricView() {
             Vector3 curPos = transform.position;
             transform.rotation = Quaternion.identity;
-            transform.Rotate(Vector3.up, 90.0f);
+            transform.Rotate(Vector3.up, Isometric_Y_Angle);
             transform.Rotate(Vector3.right, IsometricAngle);
             transform.position = new Vector3(curPos.x, IsometricHeight, curPos.z);
             transform.position -= (Vector3.right * 0.5f);

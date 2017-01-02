@@ -92,7 +92,7 @@ public sealed class BehaviorAgent : BehaviorObject, IBehaviorUpdate
     /// Tells the agent to suspend itself, reporting success or failure
     /// </summary>
     /// <returns>true if the agent is idle, false otherwise</returns>
-    internal override RunStatus StopBehavior()
+    public override RunStatus StopBehavior()
     {
         switch (this.Status)
         {
@@ -121,7 +121,7 @@ public sealed class BehaviorAgent : BehaviorObject, IBehaviorUpdate
     /// </summary>
     RunStatus IBehaviorUpdate.BehaviorUpdate(float deltaTime)
     {
-		if (this.Status == BehaviorStatus.Running)
+        if (this.Status == BehaviorStatus.Running)
         {
             this.treeRoot.Tick();
         }

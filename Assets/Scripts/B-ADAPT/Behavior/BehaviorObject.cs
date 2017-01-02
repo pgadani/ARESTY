@@ -16,7 +16,7 @@ public enum BehaviorStatus
 public class BehaviorObject
 {
     public delegate void StatusChangedEventHandler(
-        BehaviorObject sender, 
+        BehaviorObject sender,
         BehaviorStatus newStatus);
 
     public event StatusChangedEventHandler StatusChanged;
@@ -26,13 +26,13 @@ public class BehaviorObject
     /// The status of the agent. Use the OnStatusChanged event to be notified
     /// of changes
     /// </summary>
-    public BehaviorStatus Status 
-    { 
+    public BehaviorStatus Status
+    {
         get
         {
             return this.status;
         }
-        
+
         protected set
         {
             this.status = value;
@@ -71,7 +71,7 @@ public class BehaviorObject
     /// <summary>
     /// Keep track of which event, if any, is interested in us
     /// </summary>
-    public BehaviorEvent PendingEvent 
+    public BehaviorEvent PendingEvent
     {
         get
         {
@@ -94,7 +94,7 @@ public class BehaviorObject
     protected virtual void Register()
     {
     }
-    
+
     /// <summary>
     /// Constructs a new BehaviorObject capable of participating in events
     /// </summary>
@@ -115,14 +115,31 @@ public class BehaviorObject
     /// </summary>
     internal RunStatus IsElegible(BehaviorEvent candidate)
     {
+      //  Debug.Log("start");
+        
+
+
         if (this.CurrentEvent != null && pendingEvent != candidate
             && BehaviorEvent.ComparePriority(candidate, this.CurrentEvent) <= 0)
+        {
+        //    Debug.Log("fail 1");
+          //  Debug.Log("candidate " + candidate.Priority + " " + this.CurrentEvent.Priority);
+            
             return RunStatus.Failure;
+        }
 
         if (this.pendingEvent != null && pendingEvent != candidate
             && BehaviorEvent.ComparePriority(candidate, this.pendingEvent) <= 0)
-            return RunStatus.Failure;
+        {
 
+
+            //Debug.Log("fail 2 " + candidate.Priority + " " + this.pendingEvent.Priority + " ");
+
+            return RunStatus.Failure;
+        }
+
+      //  Debug.Log("success");
+        
         return RunStatus.Success;
     }
 
@@ -148,9 +165,11 @@ public class BehaviorObject
     /// </summary>
     internal void ClearEvent()
     {
-        if (this.CurrentEvent != null)
-            if (this.CurrentEvent.Status != EventStatus.Finished)
-                throw new ApplicationException("Clearing active event!");
+        if (this.CurrentEvent != null) {
+            FinishEvent();
+            //if (this.CurrentEvent.Status != EventStatus.Finished)
+            //    throw new ApplicationException("Clearing active event!");
+        }
         this.CurrentEvent = null;
     }
 
@@ -179,7 +198,7 @@ public class BehaviorObject
     /// Stops whatever the agent is doing autonomously, if anything
     /// </summary>
     /// <returns>true if the agent is idle, false otherwise</returns>
-    internal virtual RunStatus StopBehavior()
+    public virtual RunStatus StopBehavior()
     {
         return RunStatus.Success;
     }

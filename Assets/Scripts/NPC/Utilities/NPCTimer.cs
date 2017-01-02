@@ -25,7 +25,6 @@ namespace NPC {
         public void UpdateTimer() {
             if (!Finished) {
                 if (g_Stopwatch.ElapsedMilliseconds >= Duration) {
-                    UnityEngine.Debug.Log("Timer stopped");
                     g_Stopwatch.Stop();
                     g_Stopwatch.Reset();
                     Finished = true;
@@ -36,7 +35,6 @@ namespace NPC {
         // Default to one second if no parameter specified.
         // Calling start while running restarts the timer
         public void StartTimer(float dur = 1000) {
-            UnityEngine.Debug.Log("Timer started with duration " + dur);
             Duration = dur;
             Finished = false;
             g_Stopwatch.Reset();
