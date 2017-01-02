@@ -89,6 +89,19 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
         );
     }
 
+    public Node NPCBehavior_GoTo(Val<Vector3> t, bool run) {
+        return new LeafInvoke(
+            () => Behavior_GoTo(t, run)
+        );
+    }
+
+    public Node NPCBehavior_Stop() {
+        g_NPCController.Debug("Stopping");
+        return new LeafInvoke(
+            () => Behavior_Stop()
+        );
+    }
+
     public Node NPCBehavior_DoTimedGesture(GESTURE_CODE gesture, System.Object o = null) {
         return NPCBehavior_DoGesture(gesture, o, true);
     }
@@ -134,6 +147,26 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
         
     }
 
+    private RunStatus Behavior_GoTo(Val<Vector3> t, bool run) {
+        Vector3 val = t.Value;
+        if (g_NPCController.Body.IsAtTargetLocation(val)) {
+            g_NPCController.Debug("Finished go to");
+            return RunStatus.Success;
+            // return RunStatus.Running; // may be better to keep node running since val could change?
+        }
+        else {
+            try {
+                if (run)
+                    g_NPCController.RunTo(val);
+                else g_NPCController.GoTo(val);
+                return RunStatus.Running;
+            } catch(System.Exception e) {
+                // this will occur if the target is unreacheable
+                return RunStatus.Failure;
+            }
+        }
+    }
+
     private RunStatus Behavior_GoTo(Transform t, bool run) {
         if (g_NPCController.Body.IsAtTargetLocation(t.position)) {
             g_NPCController.Debug("Finished go to");
@@ -150,6 +183,11 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
                 return RunStatus.Failure;
             }
         }
+    }
+
+    private RunStatus Behavior_Stop() {
+        g_NPCController.Body.StopNavigation();
+        return RunStatus.Success;
     }
 
     private RunStatus Behavior_StopLookAt() {
