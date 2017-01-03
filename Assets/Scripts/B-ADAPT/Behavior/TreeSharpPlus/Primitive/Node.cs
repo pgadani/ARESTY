@@ -198,7 +198,6 @@ namespace TreeSharpPlus
             RunStatus result = this.LastStatus.Value;
             if (result != RunStatus.Running)
                 this.Stop();
-
             return result;
         }
 

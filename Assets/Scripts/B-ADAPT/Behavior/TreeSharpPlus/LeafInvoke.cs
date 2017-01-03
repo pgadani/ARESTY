@@ -4,8 +4,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Collections;
-using UnityEngine;
 
 namespace TreeSharpPlus
 {
@@ -109,13 +107,11 @@ namespace TreeSharpPlus
         {
             if (this.func_return != null)
             {
-				//Debug.Log ("YesInvoked!");
                 RunStatus status = RunStatus.Running;
                 while (status == RunStatus.Running)
                 {
                     status = this.func_return.Invoke();
-					//Debug.Log (status);
-					if (status != RunStatus.Running)
+                    if (status != RunStatus.Running)
                         break;
                     yield return status;
                 }
@@ -125,7 +121,6 @@ namespace TreeSharpPlus
             else if (this.func_noReturn != null)
             {
                 this.func_noReturn.Invoke();
-				//Debug.Log ("NOInvoked!");
                 yield return RunStatus.Success;
                 yield break;
             }

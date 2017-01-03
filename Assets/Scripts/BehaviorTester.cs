@@ -21,20 +21,18 @@ public class BehaviorTester : MonoBehaviour {
             g_Agent = agent.GetComponent<NPCBehavior>();
             g_AgentB = secondAgent.GetComponent<NPCBehavior>();
             behaviorAgent = new BehaviorAgent(this.BuildTreeRoot());
-            BehaviorManager.Instance.Register(behaviorAgent);
-            behaviorAgent.StartBehavior();
+            BehaviorEvent testEvent = new BehaviorEvent(doEvent => this.BuildTreeRoot(), new IHasBehaviorObject[] { g_Agent });
+            testEvent.StartEvent(1f);
         }
     }
 
     protected Node ApproachAndWait(Transform target) {
-        // We are using the methods specified in the NPCBehavior class
         return new Sequence(g_Agent.NPCBehavior_GoTo(target, true), new LeafWait(1000));
     }
 
     protected Node BuildTreeRoot() {
-        originalLocation = agent.transform.position;
-        Func<bool> act = () => (Vector3.Distance(originalLocation, targetLocation.position) > 5);
-        Node goTo = new Sequence(
+        //Func<bool> act = () => (Vector3.Distance(originalLocation, targetLocation.position) > 5);
+        Node testInteraction = new Sequence(
                             g_Agent.NPCBehavior_OrientTowards(FirstOrientation.transform.position),
                             g_Agent.NPCBehavior_LookAt(secondAgent.transform, true),
                             new LeafWait(2000),
@@ -55,8 +53,7 @@ public class BehaviorTester : MonoBehaviour {
                             g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.HURRAY),
                             g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG)
                         );
-        Node trigger = new DecoratorLoop(new LeafAssert(act));
-        Node root = new DecoratorLoop(new DecoratorForceStatus(RunStatus.Success, new SequenceParallel(trigger, goTo)));
-        return root;
+        //Node trigger = new DecoratorLoop(new LeafAssert(act));
+        return testInteraction;
     }
 }

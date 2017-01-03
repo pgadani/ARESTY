@@ -46,12 +46,15 @@ public class CrowdBehaviorEvent<T> : BehaviorEvent where T : IHasBehaviorObject
         //Remove all ineligible objects from the node, before doing the
         //real initialization. As the node has not been started yet, removing
         //a child from the ForEach<> node can be done immediately.
+        Debug.Log("initting yo");
+
         this.RemoveIneligible();
         base.Initializing();
     }
 
     protected override void Pending()
     {
+        Debug.Log("Pending yo");
         //Remove all ineligible objects from the node, before doing the
         //real initialization. As the node has not been started yet, removing
         //a child from the ForEach<> node can be done immediately.

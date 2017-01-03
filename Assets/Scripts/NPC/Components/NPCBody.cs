@@ -53,8 +53,11 @@ namespace NPC {
         [NPCAnimation("Gest_Think", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         THINK,
         [NPCAnimation("Gest_Greet_At_Distance", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
-        GREET_AT_DISTANCE
-
+        GREET_AT_DISTANCE,
+        [NPCAnimation("Body_Sit", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        SIT,
+        [NPCAnimation("Body_Sitting", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.FULL_BODY)]
+        SITTING
     }
 
     public enum NAV_STATE {
@@ -253,7 +256,7 @@ namespace NPC {
 
         public bool IsAtTargetLocation(Vector3 targetLoc) {
             return g_TargetLocationReached 
-                && targetLoc == g_TargetLocation;
+                && Vector3.Distance(targetLoc ,g_TargetLocation) < AgentRadius;
         }
 
         public bool IsIdle {
@@ -305,7 +308,7 @@ namespace NPC {
             g_NPCController.EntityType = PERCEIVEABLE_TYPE.NPC;
         }
 
-        void Start() {
+        void Awake() {
 
             g_NPCController = GetComponent<NPCController>();
 
@@ -476,6 +479,7 @@ namespace NPC {
             Navigating = true;
             g_NavQueue.Clear();
             g_NavQueue = location;
+            // in case a small correction of height/offsets are needed to adjust the target
         }
 
         [NPCAffordance("OrientTowards")]        
@@ -488,6 +492,9 @@ namespace NPC {
             get {
                 return g_NavQueue.Count == 0 ?
                     transform.position : g_NavQueue[g_NavQueue.Count-1];
+            }
+            set {
+                g_TargetLocation = value;
             }
         }
 

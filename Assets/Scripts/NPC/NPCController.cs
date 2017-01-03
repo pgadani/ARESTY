@@ -137,9 +137,10 @@ namespace NPC {
             return g_NPCModules != null && g_NPCModules.ContainsKey(mod.NPCModuleName());
         }
 
+        // TODO - merge this code
         public void RunTo(Vector3 t) {
-            if(t != gBody.TargetLocation) {
-                List<Vector3> path =  gAI.FindPath(t);
+            if (Vector3.Distance(t, gBody.TargetLocation) >= gBody.AgentRadius) {
+                List<Vector3> path =  gAI.FindPath(t); 
                 if (path.Count < 1) {
                     Debug("NPCController --> No path found to target location");
                 } else {
@@ -149,7 +150,7 @@ namespace NPC {
         }
         
         public void GoTo(Vector3 t) {
-            if (t != gBody.TargetLocation) {
+            if (Vector3.Distance(t,gBody.TargetLocation) >= gBody.AgentRadius) {
                 List<Vector3> path = gAI.FindPath(t);
                 if (path.Count < 1) {
                     Debug("NPCController --> No path found to target location");

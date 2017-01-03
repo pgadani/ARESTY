@@ -22,12 +22,16 @@ public delegate void StatusChangedEventHandler(
 
 public class BehaviorEvent : IBehaviorUpdate
 {
+
+    public static int id = 0;
+    public int eventId;
     private float priority;
     public string Name = null;
     public float Priority { get { return this.priority; } }
 
     public static int ComparePriority(BehaviorEvent a, BehaviorEvent b)
     {
+       // Debug.Log(a.Priority + " " +  b.Priority);
         return Comparer<float>.Default.Compare(a.Priority, b.Priority);
     }
 
@@ -106,6 +110,8 @@ public class BehaviorEvent : IBehaviorUpdate
         Func<Token, Node> bakeFunc,
         IEnumerable<IHasBehaviorObject> participants)
     {
+        this.eventId = BehaviorEvent.id;
+        BehaviorEvent.id++;
         this.Token = null;
         this.treeFactory = bakeFunc;
         this.Status = EventStatus.Instantiated;
@@ -114,6 +120,10 @@ public class BehaviorEvent : IBehaviorUpdate
         this.participants = new HashSet<BehaviorObject>();
         foreach (IHasBehaviorObject participant in participants)
             this.participants.Add(participant.Behavior);
+    }
+
+    public override string ToString() {
+        return "BehaviorEvent: " + this.eventId;
     }
 
     /// <summary>
@@ -146,7 +156,7 @@ public class BehaviorEvent : IBehaviorUpdate
             || this.Status == EventStatus.Pending
             || this.Status == EventStatus.Running)
             this.Status = EventStatus.Terminating;
-        return RunStatus.Running;
+        return RunStatus.Success;
     }
 
     /// <summary>
@@ -243,7 +253,7 @@ public class BehaviorEvent : IBehaviorUpdate
 
             // If the object isn't terminating (anymore), restart it if it's
             // idle and then clear the pending event
-            if (obj.Status == BehaviorStatus.Idle)
+            if (obj.Status == BehaviorStatus.Idle) { }
                 obj.StartBehavior();
             obj.PendingEvent = null;
             // Don't worry if another pending event swoops in and replaces us,
@@ -274,6 +284,8 @@ public class BehaviorEvent : IBehaviorUpdate
     /// </summary>
     protected RunStatus CheckEligible(BehaviorObject obj)
     {
+       // if (obj == null)//
+        //    Debug.Log("null object" + obj.ToString());
         return obj.IsElegible(this);
     }
 
@@ -396,6 +408,7 @@ public class BehaviorEvent : IBehaviorUpdate
     /// </summary>
     RunStatus IBehaviorUpdate.BehaviorUpdate(float deltaTime)
     {
+        Debug.Log(this + " is ticking");
         switch (this.Status)
         {
             case EventStatus.Initializing:
@@ -413,10 +426,10 @@ public class BehaviorEvent : IBehaviorUpdate
             case EventStatus.Detaching:
                 this.Detaching();
                 break;
+            case EventStatus.Finished:
+                Debug.Log("Returning Success");
+                return RunStatus.Success;
         }
-
-        if (this.Status == EventStatus.Finished)
-            return RunStatus.Success;
         return RunStatus.Running;
     }
 }
