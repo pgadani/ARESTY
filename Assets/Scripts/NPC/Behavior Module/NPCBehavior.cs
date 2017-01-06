@@ -95,8 +95,19 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
         );
     }
 
+    public Node NPCBehavior_GoTo(Vector3 t, bool run) {
+        return new LeafInvoke(
+            () => Behavior_GoTo(t, run)
+        );
+    }
+
+    public Node NPCBehavior_GoNear(Transform t, float threshold, bool run) {
+        return new LeafInvoke(
+            () => Behavior_GoNear(t, threshold, run)
+        );
+    }
+
     public Node NPCBehavior_Stop() {
-        g_NPCController.Debug("Stopping");
         return new LeafInvoke(
             () => Behavior_Stop()
         );
@@ -148,7 +159,14 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
     }
 
     private RunStatus Behavior_GoTo(Val<Vector3> t, bool run) {
-        Vector3 val = t.Value;
+        return Behavior_GoTo(t.Value, run);
+    }
+
+    private RunStatus Behavior_GoTo(Transform t, bool run) {
+        return Behavior_GoTo(t.position, run);
+    }
+
+    private RunStatus Behavior_GoTo(Vector3 val, bool run) {
         if (g_NPCController.Body.IsAtTargetLocation(val)) {
             g_NPCController.Debug("Finished go to");
             return RunStatus.Success;
@@ -167,9 +185,9 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
         }
     }
 
-    private RunStatus Behavior_GoTo(Transform t, bool run) {
-        if (g_NPCController.Body.IsAtTargetLocation(t.position)) {
-            g_NPCController.Debug("Finished go to");
+    private RunStatus Behavior_GoNear(Transform t, float threshold, bool run) {
+        if ( Vector3.Distance(transform.position, t.position) < threshold) {
+            // g_NPCController.Debug("Finished go to");
             return RunStatus.Success;
         }
         else {

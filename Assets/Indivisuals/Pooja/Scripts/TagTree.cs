@@ -11,7 +11,7 @@ public class TagTree : MonoBehaviour {
 	public GameObject player2;
 	public float touchDistance;
 	public float runDist = 5;
-	public int[] angles = new int[6] {-45, -30, -15, 15, 30, 45};
+	public int[] angles =  new int[2] {5, -5}; // new int[6] {15, -15, 30, -30, 45, -45};
 
 	private BehaviorAgent ba;
 	// private BehaviorAgent ba2;
@@ -49,21 +49,26 @@ public class TagTree : MonoBehaviour {
 	protected Node Tag(GameObject it, GameObject p) {
 		NPCBehavior pb = p.GetComponent<NPCBehavior>();
 		NPCBehavior itb = it.GetComponent<NPCBehavior>();
+
+		int townMask = 1 << NavMesh.GetAreaFromName("Town");
+
 		// change evade to use raycasts to find better direction to run in
 		Func<Vector3> evFunc = delegate() {
 			Vector3 delta = (p.transform.position - it.transform.position);
 			delta.Normalize();
 			Vector3 pos = p.transform.position + runDist*delta;
 			NavMeshHit hit;
-			NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
-			Vector3 rot;
+			NavMesh.SamplePosition(pos, out hit, runDist, townMask);
 			Vector3 maxPos = hit.position;
-			foreach (int a in angles) {
-				rot = Quaternion.Euler(0,a,0) * delta;
-				pos = p.transform.position + runDist*rot;
-				NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
-				if ((hit.position-p.transform.position).magnitude>(maxPos-p.transform.position).magnitude) {
-					maxPos = hit.position;
+			if ((maxPos-p.transform.position).magnitude<runDist) {
+				Vector3 rot;
+				foreach (int a in angles) {
+					rot = Quaternion.Euler(0,a,0) * delta;
+					pos = p.transform.position + runDist*rot;
+					NavMesh.SamplePosition(pos, out hit, runDist, townMask);
+					if ((hit.position-p.transform.position).magnitude - (maxPos-p.transform.position).magnitude > 0.3) {
+						maxPos = hit.position;
+					}
 				}
 			}
 			return maxPos;
@@ -75,38 +80,39 @@ public class TagTree : MonoBehaviour {
 			delta.Normalize();
 			Vector3 pos = it.transform.position + runDist*delta;
 			NavMeshHit hit;
-			NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
-			Vector3 rot;
+			NavMesh.SamplePosition(pos, out hit, runDist, townMask);
 			Vector3 maxPos = hit.position;
-			foreach (int a in angles) {
-				rot = Quaternion.Euler(0,a,0) * delta;
-				pos = it.transform.position + runDist*rot;
-				NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
-				if ((hit.position-it.transform.position).magnitude>(maxPos-it.transform.position).magnitude) {
-					maxPos = hit.position;
+			if ((maxPos-it.transform.position).magnitude<runDist) {
+				Vector3 rot;
+				foreach (int a in angles) {
+					rot = Quaternion.Euler(0,a,0) * delta;
+					pos = it.transform.position + runDist*rot;
+					NavMesh.SamplePosition(pos, out hit, runDist, townMask);
+					if ((hit.position-it.transform.position).magnitude - (maxPos-it.transform.position).magnitude > 0.3) {
+						maxPos = hit.position;
+					}
 				}
 			}
 			return maxPos;
 		};
 		Val<Vector3> evadeInv = Val.V(evInvFunc);
 
-		Val<Vector3> chase = Val.V(() => p.transform.position);
-
 		return new Sequence (
 			new DecoratorForceStatus (RunStatus.Success, new SequenceParallel (
 				// new DecoratorLoop (new LeafTrace(it+" chasing "+p+" for "+(it.transform.position-p.transform.position).magnitude)),
 				new LeafTrace(it+" chasing "+p),
 				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude > touchDistance)),
-				pb.NPCBehavior_GoTo(evade, true),
-				itb.NPCBehavior_GoTo(chase, true)
+				new DecoratorLoop (pb.NPCBehavior_GoTo(evade, true)),
+				new DecoratorLoop (itb.NPCBehavior_GoTo(p.transform, true))
 			)),
 			itb.NPCBehavior_DoGesture(GESTURE_CODE.GRAB_FRONT),
 			new LeafTrace("SWITCH"),
 			pb.NPCBehavior_Stop(),
-			new DecoratorForceStatus (RunStatus.Success, new SequenceParallel (
-				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude < 1.2*touchDistance)),
-				itb.NPCBehavior_GoTo(evadeInv, true)
-			))		
+			new DecoratorForceStatus (RunStatus.Success, new Race (
+				new LeafWait(Val.V(() => 3000L)), // so the waiting times out in 3 s
+				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude < 1.5*touchDistance)),
+				new DecoratorLoop (itb.NPCBehavior_GoTo(evadeInv, true))
+			))
 		);
 
 	}

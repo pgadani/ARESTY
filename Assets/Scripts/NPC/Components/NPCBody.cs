@@ -580,6 +580,9 @@ namespace NPC {
             }
         }
 
+        public Transform GetTransform() {
+            return transform;
+        }
 
         #endregion
 
