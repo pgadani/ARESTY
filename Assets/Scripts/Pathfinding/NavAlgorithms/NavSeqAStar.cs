@@ -431,6 +431,9 @@ public class NavSeqAStar : MonoBehaviour, IPathfinder, INPCModule {
     public void RemoveNPCModule() {
         GetComponent<NPCController>().RemoveNPCModule(this);
     }
+
+    public void InitializeModule() { /* Purposely empty */ }
+
     #endregion
 
     #region Properties

@@ -18,9 +18,9 @@ namespace NPC {
         public string Name;
 
         [SerializeField]
-        Transform AnimatedObject;
-
-        Animation g_Animation;
+        public Collider Collider;
+        
+        //Animation g_Animation;
 
         private bool Open = false;
         private bool OpenState = false;
@@ -30,40 +30,20 @@ namespace NPC {
 
         #region Unity_Methods
         void Reset() {
-            AnimatedObject = transform.parent;
             MainInteractionPoint = transform;
             PerceptionWeightType = PERCEIVE_WEIGHT.TOTAL;
         }
 
-        private void Start() {
-            if(AnimatedObject != null)
-                    g_Animation = AnimatedObject.gameObject.GetComponent<Animation>();
-        }
+        //private void OnTriggerEnter(Collider other) {
+        //    Open = true;
+        //    g_Colliders.Add(other);
+        //}
 
-        private void OnTriggerEnter(Collider other) {
-            Open = true;
-            g_Colliders.Add(other);
-        }
-
-        private void OnTriggerExit(Collider other) {
-            g_Colliders.Remove(other);
-            if(g_Colliders.Count == 0)
-                Open = false;
-        }
-
-        private void FixedUpdate() {
-            while(!(g_Animation == null || g_Animation.isPlaying)) {
-                if(Open) {
-                    if(!OpenState) {
-                        g_Animation.Play("Sliding_Door");
-                    }
-                } else {
-                    if(OpenState) {
-                        g_Animation.Play("Sliding_Door_Close");
-                    }
-                }
-            }
-        }
+        //private void OnTriggerExit(Collider other) {
+        //    g_Colliders.Remove(other);
+        //    if(g_Colliders.Count == 0)
+        //        Open = false;
+        //}
 
         #endregion
 
@@ -104,7 +84,7 @@ namespace NPC {
         /// </summary>
         /// <returns>No Implementation Exception</returns>
         public float GetAgentRadius() {
-            throw new NotImplementedException();
+            return Collider == null ? 0f : Collider.transform.localScale.x;
         }
         #endregion
 

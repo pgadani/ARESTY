@@ -47,6 +47,9 @@ public class NPCExplorer : MonoBehaviour, INPCModule {
     #endregion
 
     #region NPCModule
+
+    public void InitializeModule() { /* Purposely empty */ }
+
     public bool IsEnabled() {
         return g_Enabled;
     }

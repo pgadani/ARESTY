@@ -49,7 +49,7 @@ namespace TreeSharpPlus
                 yield return RunStatus.Running;
 
             DecoratedChild.Stop();
-            Debug.Log(result);
+            Debug.Log("DecoratorPrintResult returingin: " + result);
 
             yield return result;
             yield break;

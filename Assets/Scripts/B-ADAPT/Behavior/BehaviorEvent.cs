@@ -408,7 +408,7 @@ public class BehaviorEvent : IBehaviorUpdate
     /// </summary>
     RunStatus IBehaviorUpdate.BehaviorUpdate(float deltaTime)
     {
-        Debug.Log(this + " is ticking");
+        // Debug.Log(this + " is ticking");
         switch (this.Status)
         {
             case EventStatus.Initializing:
@@ -427,7 +427,6 @@ public class BehaviorEvent : IBehaviorUpdate
                 this.Detaching();
                 break;
             case EventStatus.Finished:
-                Debug.Log("Returning Success");
                 return RunStatus.Success;
         }
         return RunStatus.Running;

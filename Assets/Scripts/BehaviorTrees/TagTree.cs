@@ -92,22 +92,22 @@ public class TagTree : MonoBehaviour {
 
 		Val<Vector3> chase = Val.V(() => p.transform.position);
 
-		return new Sequence (
-			new DecoratorForceStatus (RunStatus.Success, new SequenceParallel (
-				// new DecoratorLoop (new LeafTrace(it+" chasing "+p+" for "+(it.transform.position-p.transform.position).magnitude)),
-				new LeafTrace(it+" chasing "+p),
-				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude > touchDistance)),
-				pb.NPCBehavior_GoTo(evade, true),
-				itb.NPCBehavior_GoTo(chase, true)
-			)),
-			itb.NPCBehavior_DoGesture(GESTURE_CODE.GRAB_FRONT),
-			new LeafTrace("SWITCH"),
-			pb.NPCBehavior_Stop(),
-			new DecoratorForceStatus (RunStatus.Success, new SequenceParallel (
-				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude < 1.2*touchDistance)),
-				itb.NPCBehavior_GoTo(evadeInv, true)
-			))		
-		);
+        return new Sequence(
+            new DecoratorForceStatus(RunStatus.Success, new SequenceParallel(
+                // new DecoratorLoop (new LeafTrace(it+" chasing "+p+" for "+(it.transform.position-p.transform.position).magnitude)),
+                new LeafTrace(it + " chasing " + p),
+                new DecoratorLoop(new LeafAssert(() => (it.transform.position - p.transform.position).magnitude > touchDistance)),
+                pb.NPCBehavior_GoTo(p.transform, true),
+                itb.NPCBehavior_GoTo(p.transform, true)
+            )),
+            itb.NPCBehavior_DoGesture(GESTURE_CODE.GRAB_FRONT),
+            new LeafTrace("SWITCH"));//,
+		//	pb.Behavior.StopBehavior(),
+		//	new DecoratorForceStatus (RunStatus.Success, new SequenceParallel (
+		//		new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude < 1.2*touchDistance))//,
+		//		// itb.NPCBehavior_GoTo(evadeInv, true)
+		//	))		
+		//);
 
 	}
 

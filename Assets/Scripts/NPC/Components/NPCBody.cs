@@ -46,7 +46,7 @@ namespace NPC {
         HURRAY,
         [NPCAnimation("Gest_Grab_Front", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
         GRAB_FRONT,
-        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE,4f)]
+        [NPCAnimation("Gest_Talk_Long", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE,4.1f)]
         TALK_LONG,
         [NPCAnimation("Gest_Talk_Short", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,1.12f)]
         TALK_SHORT,
@@ -54,10 +54,28 @@ namespace NPC {
         THINK,
         [NPCAnimation("Gest_Greet_At_Distance", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         GREET_AT_DISTANCE,
-        [NPCAnimation("Body_Sit", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
+        [NPCAnimation("Body_Sit", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY, 2.75f)]
         SIT,
         [NPCAnimation("Body_Sitting", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.FULL_BODY)]
-        SITTING
+        SITTING,
+        [NPCAnimation("Gest_Look_Around", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        LOOK_AROUND,
+        [NPCAnimation("Body_Idle_Small_Steps", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,15f)]
+        IDLE_SMALL_STEPS,
+        [NPCAnimation("Gest_Writing", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE)]
+        DESK_WRITING,
+        [NPCAnimation("Body_On_The_Phone", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.FULL_BODY, 15f)]
+        STAND_PHONE_CALL,
+        [NPCAnimation("Gest_Warning", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE, 3.1f)]
+        WARNING,
+        [NPCAnimation("Gest_Yawn", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE, 2.2f)]
+        YAWN,
+        [NPCAnimation("Body_Bored_Idle", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY, 12.4f)]
+        BORED_IDLE,
+        [NPCAnimation("Gest_Drinking", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE, 2.4f)]
+        DRINK,
+        [NPCAnimation("Gest_Texting", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.GESTURE, 15f)]
+        TEXTING
     }
 
     public enum NAV_STATE {
@@ -620,8 +638,9 @@ namespace NPC {
             Vector3 targetDirection = g_TargetLocation - transform.position;
             if((distance <= DistanceTolerance*2f) && g_NavQueue.Count == 1) {
                 RaycastHit h;
-                if (Physics.Raycast(Head.position, targetDirection, out h, 2f)) {
-                    goto NextPoint;
+                if (Physics.Raycast(Head.position, targetDirection, out h, 1.5f)) {
+                    if(h.transform.gameObject.GetComponent<NPCController>() != null)
+                        goto NextPoint;
                 }
             }
             if(EnableSocialForces) {
@@ -689,7 +708,8 @@ NextPoint:
             Vector3 totalForce = Vector3.zero;
             foreach (IPerceivable p in g_NPCController.Perception.PerceivedEntities) {
                 float distance = Vector3.Distance(transform.position, p.GetPosition());
-                float radii = AgentRadius + p.GetAgentRadius();
+                float otherRadius = p.GetAgentRadius();
+                float radii = AgentRadius + (otherRadius == 0 ? AgentRadius : otherRadius);
                 if (g_TargetLocation == p.GetPosition() && distance <= radii * 1.5f)
                     StopNavigation();
                 float scale = 0f;

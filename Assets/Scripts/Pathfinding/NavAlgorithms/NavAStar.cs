@@ -62,6 +62,8 @@ public class NavAStar : MonoBehaviour, IPathfinder, INPCModule {
 
     #region Public_Functions
 
+    public void InitializeModule() { /* Purposely empty */ }
+
     public void DryRunAlgorithm() {
         if(DryRunAlgo) {
             RaycastHit hit;

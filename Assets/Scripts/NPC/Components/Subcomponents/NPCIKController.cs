@@ -44,6 +44,8 @@ namespace NPC {
         RaycastHit g_RayHit;
         private static string m_AnimatorRightFootParam = "IK_Right_Foot";
         private static string m_AnimatorLeftFootParam = "IK_Left_Foot";
+        private static string m_AnimatorRightHandParam = "IK_Right_Hand";
+        private static string m_AnimatorLeftHandParam = "IK_Left_Hand";
         private float g_ColliderRadiusCorrection;
         private float g_ColliderHeight;
 
@@ -152,7 +154,8 @@ namespace NPC {
         #region Private_Functions
 
         private void DoHandsIK() {
-
+            float rightHandWeight = gAnimator.GetFloat(m_AnimatorRightHandParam) ,
+                  leftHandWeight = gAnimator.GetFloat(m_AnimatorLeftHandParam);
         }
 
         private void DoLookAt() {

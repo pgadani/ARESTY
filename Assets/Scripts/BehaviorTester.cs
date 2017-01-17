@@ -21,26 +21,28 @@ public class BehaviorTester : MonoBehaviour {
             g_Agent = agent.GetComponent<NPCBehavior>();
             g_AgentB = secondAgent.GetComponent<NPCBehavior>();
             behaviorAgent = new BehaviorAgent(this.BuildTreeRoot());
-            BehaviorEvent testEvent = new BehaviorEvent(doEvent => this.BuildTreeRoot(), new IHasBehaviorObject[] { g_Agent });
-            testEvent.StartEvent(1f);
+            BehaviorManager.Instance.Register(behaviorAgent);
+            behaviorAgent.StartBehavior();
         }
     }
 
     protected Node ApproachAndWait(Transform target) {
+        // We are using the methods specified in the NPCBehavior class
         return new Sequence(g_Agent.NPCBehavior_GoTo(target, true), new LeafWait(1000));
     }
 
     protected Node BuildTreeRoot() {
-        //Func<bool> act = () => (Vector3.Distance(originalLocation, targetLocation.position) > 5);
-        Node testInteraction = new Sequence(
-                            g_Agent.NPCBehavior_OrientTowards(FirstOrientation.transform.position),
+        originalLocation = agent.transform.position;
+        Func<bool> act = () => (Vector3.Distance(originalLocation, targetLocation.position) > 5);
+        Node goTo = new Sequence(
+                            g_Agent.NPCBehavior_OrientTowards(FirstOrientation.transform),
                             g_Agent.NPCBehavior_LookAt(secondAgent.transform, true),
                             new LeafWait(2000),
                             g_Agent.NPCBehavior_LookAt(null, false),
                             new LeafWait(2000),
                             g_Agent.NPCBehavior_DoTimedGesture(GESTURE_CODE.DISSAPOINTMENT),
                             ApproachAndWait(targetLocation),
-                            g_Agent.NPCBehavior_OrientTowards(secondAgent.transform.position),
+                            g_Agent.NPCBehavior_OrientTowards(secondAgent.transform),
                             new SequenceParallel(
                                 g_Agent.NPCBehavior_DoGesture(GESTURE_CODE.GREET_AT_DISTANCE),
                                 g_AgentB.NPCBehavior_GoTo(g_Agent.transform,false)
@@ -53,7 +55,8 @@ public class BehaviorTester : MonoBehaviour {
                             g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.HURRAY),
                             g_AgentB.NPCBehavior_DoTimedGesture(GESTURE_CODE.TALK_LONG)
                         );
-        //Node trigger = new DecoratorLoop(new LeafAssert(act));
-        return testInteraction;
+        Node trigger = new DecoratorLoop(new LeafAssert(act));
+        Node root = goTo;
+        return root;
     }
 }

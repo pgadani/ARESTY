@@ -116,6 +116,7 @@ namespace NPC {
             foreach (INPCModule m in modules) {
                 if (!ContainsModule(m)) {
                     Debug("Loading NPC Module -> " + m.NPCModuleName());
+                    m.InitializeModule();
                     if (!AddNPCModule(m)) {
                         GameObject.DestroyImmediate((UnityEngine.Object)m);
                     }
