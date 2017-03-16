@@ -11,23 +11,11 @@ public class TagTree : MonoBehaviour {
 	public GameObject player2;
 	public float touchDistance;
 	public float runDist = 5;
-	public int[] angles = new int[6] {15, -15, 30, -30, 45, -45};
+	public int[] angles =  new int[2] {5, -5}; // new int[6] {15, -15, 30, -30, 45, -45};
 
 	private BehaviorAgent ba;
 	// private BehaviorAgent ba2;
 	// private bool on;
-	private NPCBehavior npcBehavior1;
-	private NPCBehavior npcBehavior2;
-	public GameObject selectionIndicator1;
-	public GameObject selectionIndicator2;
-	private RaycastHit hitTemp;
-
-	void Awake () {
-		npcBehavior1 = player.GetComponent <NPCBehavior> ();
-		npcBehavior2 = player2.GetComponent <NPCBehavior> ();
-		selectionIndicator1 = player.transform.Find ("SelectionEffect").gameObject;
-		selectionIndicator2 = player2.transform.Find ("SelectionEffect").gameObject;
-	}
 
 	// Use this for initialization
 	void Start() {
@@ -37,7 +25,7 @@ public class TagTree : MonoBehaviour {
 		ba.StartBehavior();
 		// on = true;
 	}
-
+	
 	// Update is called once per frame
 	void Update() {
 		// if (Input.GetKeyUp(KeyCode.Space)) {
@@ -70,7 +58,7 @@ public class TagTree : MonoBehaviour {
 			delta.Normalize();
 			Vector3 pos = p.transform.position + runDist*delta;
 			NavMeshHit hit;
-			NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
+			NavMesh.SamplePosition(pos, out hit, runDist, townMask);
 			Vector3 maxPos = hit.position;
 			if ((maxPos-p.transform.position).magnitude<runDist) {
 				Vector3 rot;
@@ -99,7 +87,7 @@ public class TagTree : MonoBehaviour {
 				foreach (int a in angles) {
 					rot = Quaternion.Euler(0,a,0) * delta;
 					pos = it.transform.position + runDist*rot;
-					NavMesh.SamplePosition(pos, out hit, runDist, NavMesh.AllAreas);
+					NavMesh.SamplePosition(pos, out hit, runDist, townMask);
 					if ((hit.position-it.transform.position).magnitude - (maxPos-it.transform.position).magnitude > 0.3) {
 						maxPos = hit.position;
 					}
@@ -129,38 +117,13 @@ public class TagTree : MonoBehaviour {
 
 	}
 
-	protected Node ClickMove1 () {
-		return new Sequence (
-			new LeafAssert (() => selectionIndicator1.activeInHierarchy),
-			new LeafAssert (() => Input.GetMouseButtonDown (1)),
-			new LeafAssert (() => Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitTemp, 1000.0f)),
-			npcBehavior1.NPCBehavior_Stop (),
-			npcBehavior1.NPCBehavior_GoTo (Val.V(() => hitTemp.point), true)
-		);
-	}
-
-	protected Node ClickMove2 () {
-		return new Sequence (
-			new LeafAssert (() => selectionIndicator2.activeInHierarchy),
-			new LeafAssert (() => Input.GetMouseButtonDown (1)),
-			new LeafAssert (() => Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitTemp, 1000.0f)),
-			npcBehavior2.NPCBehavior_Stop (),
-			npcBehavior2.NPCBehavior_GoTo (Val.V(() => hitTemp.point), true)
-		);
-	}
-
 	protected Node BuildTreeRoot() {
 		return new DecoratorLoop (
 			new DecoratorForceStatus (RunStatus.Success, 
-				new Selector (
-					ClickMove1 (),
-					ClickMove2 (),
-					new Sequence (
-						new DecoratorForceStatus (RunStatus.Success, Tag(player, player2)),
-						new DecoratorForceStatus (RunStatus.Success, Tag(player2, player))
-					)
-				)
-			)
+			new Sequence (
+				new DecoratorForceStatus (RunStatus.Success, Tag(player, player2)),
+				new DecoratorForceStatus (RunStatus.Success, Tag(player2, player))
+			))
 		);
 	}
 
