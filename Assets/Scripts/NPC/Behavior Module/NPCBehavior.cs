@@ -102,7 +102,6 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
     }
 
     public Node NPCBehavior_Stop() {
-        g_NPCController.Debug("Stopping");
         return new LeafInvoke(
             () => Behavior_Stop()
         );

@@ -32,14 +32,14 @@ namespace NPC {
         ANGRY,
         [NPCAnimation("Gest_Why", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         WHY,
+        [NPCAnimation("Gest_Annoyed", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        ANNOYED,
         [NPCAnimation("Gest_Short_Wave", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         WAVE_HELLO,
         [NPCAnimation("Gest_Negate", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
         NEGATE,
         [NPCAnimation("Body_Die", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
         DIE,
-        [NPCAnimation("Gest_Anger", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
-        ANGER,
         [NPCAnimation("Gest_Dissapointment", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,3.11f)]
         DISSAPOINTMENT,
         [NPCAnimation("Gest_Hurray", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE,2.05f)]
@@ -57,7 +57,9 @@ namespace NPC {
         [NPCAnimation("Body_Sit", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.FULL_BODY)]
         SIT,
         [NPCAnimation("Body_Sitting", ANIMATION_PARAM_TYPE.BOOLEAN, ANIMATION_LAYER.FULL_BODY)]
-        SITTING
+        SITTING,
+        [NPCAnimation("Gest_Dismiss", ANIMATION_PARAM_TYPE.TRIGGER, ANIMATION_LAYER.GESTURE)]
+        DISMISS
     }
 
     public enum NAV_STATE {
