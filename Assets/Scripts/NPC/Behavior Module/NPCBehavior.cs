@@ -155,7 +155,6 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
     private RunStatus Behavior_GoTo(Val<Vector3> t, bool run) {
         Vector3 val = t.Value;
         if (g_NPCController.Body.IsAtTargetLocation(val)) {
-            g_NPCController.Debug("Finished go to");
             return RunStatus.Success;
             // return RunStatus.Running; // may be better to keep node running since val could change?
         }
@@ -174,7 +173,6 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
 
     private RunStatus Behavior_GoTo(Transform t, bool run) {
         if (g_NPCController.Body.IsAtTargetLocation(t.position)) {
-            g_NPCController.Debug("Finished go to");
             return RunStatus.Success;
         }
         else {
@@ -192,7 +190,7 @@ public class NPCBehavior : MonoBehaviour, INPCModule, IHasBehaviorObject {
 
     private RunStatus Behavior_GoNear(Transform t, float threshold, bool run) {
         if ( Vector3.Distance(transform.position, t.position) < threshold) {
-            // g_NPCController.Debug("Finished go to");
+            g_NPCController.StopNavigation();
             return RunStatus.Success;
         }
         else {

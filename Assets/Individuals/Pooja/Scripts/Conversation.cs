@@ -8,7 +8,7 @@ using NPC;
 
 public class Conversation {
 
-	public float threshold;
+	public float threshold = 1;
 	public List<Transform> locations;
 	public GameObject[] conversants;
 	private Vector3[] startingLocations;

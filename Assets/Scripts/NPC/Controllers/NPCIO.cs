@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
@@ -45,7 +45,8 @@ namespace NPC {
 			MODIFIER = KeyCode.LeftShift, 		// looking
 			MODIFIER_SEC = KeyCode.LeftControl, // running
 			CONTEXT_ACTION = KeyCode.Mouse1, 	// secondary mouse button
-			SELECT_AGENT = KeyCode.Mouse0 		// primary mouse button
+			SELECT_AGENT = KeyCode.Mouse0, 		// primary mouse button
+			STOP = KeyCode.Space				// stop
 		};
 	
 		// Update is called by NPCControlManager
@@ -64,7 +65,6 @@ namespace NPC {
 					RaycastHit hitInfo = new RaycastHit();
 					bool clickedOn = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
 					if (clickedOn) {
-						UnityEngine.Debug.Log("Click");
 						// handle clicking selection
 						GameObject player = hitInfo.transform.gameObject;
 						NPCController npc = player.GetComponent<NPCController>();
@@ -90,8 +90,14 @@ namespace NPC {
 				}
 			}
 
+			// other context action - stopping current movement
+			if (Input.GetKey((KeyCode)INPUT_KEY.STOP)) {
+				foreach (GameObject g in selected) {
+					g.GetComponent<NPCController>().StopNavigation();
+				}
+			}
 			// context actions - walking/running to location
-			if (Input.GetKeyDown((KeyCode)INPUT_KEY.CONTEXT_ACTION)) {
+			else if (Input.GetKeyDown((KeyCode)INPUT_KEY.CONTEXT_ACTION)) {
 				RaycastHit hitInfo = new RaycastHit();
 				if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo)) {
 					if (Input.GetKey((KeyCode)INPUT_KEY.MODIFIER)) {
@@ -103,7 +109,7 @@ namespace NPC {
 						foreach (GameObject g in selected) {
 							g.GetComponent<NPCController>().RunTo(hitInfo.point);
 						}
-					} 
+					}
 					else {
 						foreach (GameObject g in selected) {
 							g.GetComponent<NPCController>().GoTo(hitInfo.point);
@@ -129,7 +135,8 @@ namespace NPC {
 				{"Argument (1)", () => (new Argument().Init(selected))},
 				{"Tag (2)", () => (new Tag().Init(selected))},
 				{"Opening Gates (3)", () => (new GuardGate().Init(selected))},
-				{"Conversation (any)", () => (new Conversation().Init(selected))}
+				{"Conversation (any)", () => (new Conversation().Init(selected))},
+				{"Market (2+)", () => (new Market().Init(selected))}
 			};
 			try {
 				String opt = gDropdown.options[gDropdown.value].text;
@@ -167,7 +174,6 @@ namespace NPC {
 			else {
 				gSubmit.enabled = true;
 				List<String> options = new List<String>();
-				options.Add("Conversation (any)");
 				if (selected.Count == 1) {
 					// Peddler and Argument
 					options.Add("Peddler (1)");
@@ -175,10 +181,13 @@ namespace NPC {
 				}
 				else if (selected.Count == 2) {
 					options.Add("Tag (2)");
+					options.Add("Market (2+)");
 				}
 				else if (selected.Count == 3) {
 					options.Add("Opening Gates (3)");
+					options.Add("Market (2+)");
 				}
+				options.Add("Conversation (any)");
 				gDropdown.AddOptions(options);
 			}
 		}

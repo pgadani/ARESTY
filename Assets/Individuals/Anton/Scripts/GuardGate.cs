@@ -43,7 +43,6 @@ public class GuardGate {
 	protected Node OpenGate(int gnum) {
 		NPCBehavior npcBehavior = guard[gnum].GetComponent<NPCBehavior>();
 		return new Sequence (
-			new LeafAssert(() => Vector3.Distance (gate[gnum].transform.position, guest.transform.position) < 20.0f),
 			new LeafAssert(() => !gateOpened[gnum]),
 			npcBehavior.NPCBehavior_Stop(),
 			new Selector (
@@ -65,7 +64,6 @@ public class GuardGate {
 	protected Node CloseGate(int gnum) {
 		NPCBehavior npcBehavior = guard[gnum].GetComponent<NPCBehavior>();
 		return new Sequence (
-			new LeafAssert(() => Vector3.Distance(gate[gnum].transform.position, guest.transform.position) > 22.0f),
 			new LeafAssert(() => gateOpened[gnum]),
 			npcBehavior.NPCBehavior_Stop(),
 			new Selector (
@@ -97,10 +95,16 @@ public class GuardGate {
 			new DecoratorForceStatus (
 				RunStatus.Success,
 				new Sequence (
+					new DecoratorForceStatus (RunStatus.Success, new DecoratorLoop (
+						new LeafAssert(() => Vector3.Distance (gate[0].transform.position, guest.transform.position) > 20.0f)
+					)),
 					new SequenceParallel (
 						OpenGate(0),
 						OpenGate(1)
 					),
+					new DecoratorForceStatus (RunStatus.Success, new DecoratorLoop (
+						new LeafAssert(() => Vector3.Distance(gate[0].transform.position, guest.transform.position) < 20.0f)
+					)),
 					new SequenceParallel (
 						CloseGate(0),
 						CloseGate(1)

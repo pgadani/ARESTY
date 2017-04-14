@@ -10,8 +10,8 @@ public class Tag {
 
 	GameObject player;
 	GameObject player2;
-	float touchDistance = 0.8f;
-	float runDist = 10;
+	float touchDistance = 2.0f;
+	float runDist = 5;
 	int[] angles =  new int[2] {5, -5}; // new int[6] {15, -15, 30, -30, 45, -45};
 
 	private BehaviorAgent ba;
@@ -31,7 +31,7 @@ public class Tag {
 		NPCBehavior pb = p.GetComponent<NPCBehavior>();
 		NPCBehavior itb = it.GetComponent<NPCBehavior>();
 
-		int townMask = 1 << NavMesh.GetAreaFromName("Town");
+		int townMask = 1 << NavMesh.GetAreaFromName("Walkable");
 
 		// change evade to use raycasts to find better direction to run in
 		Func<Vector3> evFunc = delegate() {

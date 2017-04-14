@@ -137,7 +137,10 @@ namespace NPC {
             return g_NPCModules != null && g_NPCModules.ContainsKey(mod.NPCModuleName());
         }
 
-        // TODO - merge this code
+        public void StopNavigation() {
+            gBody.StopNavigation();
+        }
+
         public void RunTo(Vector3 t) {
             if (Vector3.Distance(t, gBody.TargetLocation) >= gBody.AgentRadius) {
                 List<Vector3> path =  gAI.FindPath(t); 

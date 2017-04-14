@@ -24,11 +24,12 @@ public class Peddler {
 	protected Node BuildTreeRoot() {
 		NPCBehavior pb = player.GetComponent<NPCBehavior>();
 		return new DecoratorLoop (
-			new Sequence (
+			new DecoratorForceStatus(RunStatus.Success, new Sequence (
+            	new LeafAssert(() => player.GetComponent<NPCPerception>().PerceivedAgents.Count > 0),
 				pb.NPCBehavior_DoGesture(GESTURE_CODE.GREET_AT_DISTANCE, null, true),
 				new LeafWait(2000L),
 				pb.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT, null, true)
-			)
+			))
 		);
 	}
 
