@@ -10,46 +10,72 @@ public class Market {
 
 	float threshold = 15.0f;
 	GameObject seller;
-	GameObject[] buyers;
+	GameObject buyer;
+	GameObject obj;
+	Vector3 startloc;
 	private BehaviorAgent ba;
 	
 	// Use this for initialization	
 	public void Init(List<GameObject> players) {
 		if (players.Count >= 2) {
 			seller = players[0];
-			buyers = new GameObject[players.Count-1];
-			players.CopyTo(1, buyers, 0, players.Count-1);
+			buyer = players[1];
+			startloc = buyer.transform.position;
+			obj = GameObject.Find("Apple (9)"); // testing IK stuff for now
 			ba = new BehaviorAgent(this.BuildTreeRoot());
 			BehaviorManager.Instance.Register(ba);
 			ba.StartBehavior();
 		}
 	}
 
+	protected Node UntilNear(GameObject p1, GameObject p2, float dist) {
+		return new DecoratorForceStatus (RunStatus.Success, 
+			new DecoratorLoop (
+				new LeafAssert(() => Vector3.Distance(p1.transform.position, p2.transform.position) > dist)
+			)
+		);
+	}
+
 	protected Node BuildTreeRoot() {
 		NPCBehavior sb = seller.GetComponent<NPCBehavior>();
-		Node[] goToSeller = new Node[buyers.Length];
-		Node[] talkingNodding= new Node[buyers.Length+1];
-		for (int i = 0; i<buyers.Length; i++) {
-			NPCBehavior nb = buyers[i].GetComponent<NPCBehavior>();
-			goToSeller[i] = nb.NPCBehavior_GoNear(seller.transform, threshold, false);
-			talkingNodding[i] = new Sequence(
-				nb.NPCBehavior_LookAt(seller.transform, true),
-				nb.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT, null, true),
-				new LeafWait(1000L),
-				nb.NPCBehavior_DoGesture(GESTURE_CODE.ACKNOWLEDGE)
-			);
-		}
-		talkingNodding[buyers.Length] = sb.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT, null, true);
+		NPCBehavior bb = buyer.GetComponent<NPCBehavior>();
+		
+		Action pickUp = delegate() {
+			Animator banim = buyer.GetComponent<Animator>();
+			if (banim!=null && obj!=null) {
+				banim.SetLookAtWeight(1);
+				banim.SetLookAtPosition(obj.transform.position);
+				banim.SetIKPositionWeight(AvatarIKGoal.RightHand,1);
+				banim.SetIKRotationWeight(AvatarIKGoal.RightHand,1);  
+				banim.SetIKPosition(AvatarIKGoal.RightHand,obj.transform.position);
+				banim.SetIKRotation(AvatarIKGoal.RightHand,obj.transform.rotation);
+			}
+		};
+
 		return new DecoratorLoop (
-			new Sequence (
-				new SequenceParallel(goToSeller),
-				new LeafTrace("Reached seller"),
-				sb.NPCBehavior_LookAt(buyers[0].transform, true),
-				sb.NPCBehavior_DoGesture(GESTURE_CODE.GREET_AT_DISTANCE, null, true),
-				new LeafWait(2000L),
+			new DecoratorForceStatus(RunStatus.Success, new Sequence (
+				bb.NPCBehavior_LookAt(seller.transform, true),
+				new SequenceParallel (
+					bb.NPCBehavior_GoNear(seller.transform, threshold, false),
+					new Sequence (
+						this.UntilNear(buyer, seller, threshold+5),
+						new LeafTrace("Reached seller"),
+						sb.NPCBehavior_LookAt(buyer.transform, true),
+						new LeafWait(2000l),
+						sb.NPCBehavior_DoGesture(GESTURE_CODE.GREET_AT_DISTANCE, null, true),
+						new LeafWait(2000l)
+					)
+				),
 				new LeafTrace("Talking"),
-				new SequenceParallel(talkingNodding)
-			)
+				new SequenceParallel (
+					sb.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT, null, true),
+					bb.NPCBehavior_DoGesture(GESTURE_CODE.TALK_SHORT, null, true)
+				),
+				bb.NPCBehavior_GoNear(obj.transform, 4, false),
+				this.UntilNear(buyer, obj, 4),
+				new LeafInvoke(pickUp),
+				bb.NPCBehavior_GoTo(startloc, false)
+			))
 		);
 	}
 

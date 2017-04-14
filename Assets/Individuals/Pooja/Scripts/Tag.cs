@@ -90,7 +90,7 @@ public class Tag {
 			new LeafTrace("SWITCH"),
 			// pb.NPCBehavior_Stop(),
 			new DecoratorForceStatus (RunStatus.Success, new Race (
-				new LeafWait(Val.V(() => 3000L)), // so the waiting times out in 3 s
+				new LeafWait(3000L), // so the waiting times out in 3 s
 				new DecoratorLoop (new LeafAssert(() => (it.transform.position-p.transform.position).magnitude < 1.5*touchDistance)),
 				new DecoratorLoop (itb.NPCBehavior_GoTo(evadeInv, true))
 			))

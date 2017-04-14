@@ -136,7 +136,8 @@ namespace NPC {
 				{"Tag (2)", () => (new Tag().Init(selected))},
 				{"Opening Gates (3)", () => (new GuardGate().Init(selected))},
 				{"Conversation (any)", () => (new Conversation().Init(selected))},
-				{"Market (2+)", () => (new Market().Init(selected))}
+				{"Market (2)", () => (new Market().Init(selected))},
+				{"Market Gathering (2+)", () => (new MultiMarket().Init(selected))}
 			};
 			try {
 				String opt = gDropdown.options[gDropdown.value].text;
@@ -181,11 +182,13 @@ namespace NPC {
 				}
 				else if (selected.Count == 2) {
 					options.Add("Tag (2)");
-					options.Add("Market (2+)");
+					options.Add("Market (2)");
 				}
 				else if (selected.Count == 3) {
 					options.Add("Opening Gates (3)");
-					options.Add("Market (2+)");
+				}
+				if (selected.Count >= 2) {
+					options.Add("Market Gathering (2+)");					
 				}
 				options.Add("Conversation (any)");
 				gDropdown.AddOptions(options);
